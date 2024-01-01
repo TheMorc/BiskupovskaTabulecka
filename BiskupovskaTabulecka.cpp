@@ -2,7 +2,7 @@
 // FILENAME:            BiskupovskaTabulecka.cpp
 //
 // Copyright(c) 2008 Motorola, Inc. All rights reserved.
-// Copyright(c) 2023 Richard Gr·Ëik - Morc
+// Copyright(c) 2023, 2024 Richard Gr·Ëik - Morc
 //
 // DESCRIPTION:     Defines the entry point for the application.
 //
@@ -16,6 +16,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <ScanCAPI.h>
 #include <aygshell.h>
 #include "resource.h"
 
@@ -28,7 +29,6 @@ HINSTANCE			g_hInst;					// The current instance
 HWND				g_hwndCB;					// The command bar handle
 HWND                g_hwnd;						// The main window handle
 HMENU				g_hSubMenu;					// the 'File' menu handle
-
 HWND				g_hwndList;					// The list view of GUI
 
 static SHACTIVATEINFO s_sai;
@@ -46,8 +46,27 @@ LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
 HWND				CreateRpCommandBar(HWND);
 void                CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont);
 void				CreateListView(HWND hDlg);
-void				TriggerState(int);
+void				ErrorExit(HWND, UINT, LPTSTR);
 
+HANDLE			hScanner				= NULL;
+LPSCAN_BUFFER	lpScanBuffer			= NULL;
+TCHAR			szScannerName[MAX_PATH] = TEXT("SCN1:");	// default scanner name
+DWORD			dwScanSize				= 7095;				// default scan buffer size	
+DWORD			dwScanTimeout			= 2000;				// default timeout value (0 means no timeout)	
+BOOL			bRequestPending			= FALSE;
+BOOL			bStopScanning			= FALSE;
+
+//use sound instead of a beep
+BOOL			bUseSound				= TRUE;
+
+#define		countof(x)		sizeof(x)/sizeof(x[0])
+enum tagUSERMSGS
+{
+	UM_INIT	= WM_USER + 0x100,
+	UM_SCAN	= WM_USER + 0x200,
+	UM_STARTSCANNING,
+	UM_STOPSCANNING
+};
 
 int WINAPI WinMain(	HINSTANCE hInstance,
 					HINSTANCE hPrevInstance,
@@ -179,6 +198,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent, nRet = 0;
+	DWORD			dwResult;
+	TCHAR			szLabelType[10];
+	TCHAR			szLen[MAX_PATH];
+	TCHAR			szMsgBuf[256];
+	LPSCAN_BUFFER	lpScanBuf;
 	static HWND hDlg;
 
 	switch (message) 
@@ -208,7 +232,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case WM_CREATE:
 			g_hwndCB = CreateRpCommandBar(hWnd);
-            // Initialize the shell activate info structure
+			PostMessage(hWnd,UM_STARTSCANNING,0,0L);
             memset (&s_sai, 0, sizeof (s_sai));
             s_sai.cbSize = sizeof (s_sai);
 			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc, NULL);
@@ -231,6 +255,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_ACTIVATE:
             // Notify shell of our activate message
 			SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
+			switch(LOWORD(wParam))
+			{
+				case WA_INACTIVE:
+					if (bRequestPending)
+						dwResult = SCAN_Flush(hScanner);
+					break;
+				
+				default:
+
+					if (!bRequestPending && lpScanBuffer != NULL && !bStopScanning)
+					{	
+						dwResult = SCAN_ReadLabelMsg(hScanner,
+													 lpScanBuffer,
+													 hWnd,
+													 UM_SCAN,
+													 dwScanTimeout,
+													 NULL);
+						
+						if ( dwResult != E_SCN_SUCCESS )
+							ErrorExit(hWnd, IDS_SCAN_FAIL, TEXT("SCAN_ReadLabelMsg"));
+						else
+							bRequestPending = TRUE;
+					}
+					break;
+			}
+
      		break;
 
 		case WM_SETTINGCHANGE:
@@ -240,6 +290,131 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			break;
 
+		case UM_SCAN:
+
+			bRequestPending = FALSE;
+
+			lpScanBuf = (LPSCAN_BUFFER)lParam;
+			if ( lpScanBuf == NULL )
+				ErrorExit(hWnd, IDS_SCAN_FAIL, 0);
+
+			switch (SCNBUF_GETSTAT(lpScanBuf))
+			{ 
+				case E_SCN_READCANCELLED:
+
+					if (bStopScanning)
+					{	// complete the second step of UM_STOPSCANNING
+						SendMessage(hWnd,UM_STOPSCANNING,0,0L);	
+						return TRUE;
+					}
+					if (!GetFocus())	
+						break;	// Do nothing if read was cancelled while deactivation
+					break;
+
+
+				case E_SCN_SUCCESS:
+				
+					wsprintf(szMsgBuf, (LPTSTR)SCNBUF_GETDATA(lpScanBuffer));
+					
+					wsprintf(szLabelType, TEXT("0x%.2X"), SCNBUF_GETLBLTYP(lpScanBuf));
+
+					wsprintf(szLen, TEXT("%d"), SCNBUF_GETLEN(lpScanBuf));
+					break;
+			}
+
+			if (GetFocus())
+			{
+				dwResult = SCAN_ReadLabelMsg(hScanner,
+											 lpScanBuffer,
+											 hWnd,
+											 UM_SCAN,
+											 dwScanTimeout,
+											 NULL);
+				
+				if ( dwResult != E_SCN_SUCCESS )
+					ErrorExit(hWnd, IDS_SCAN_FAIL, TEXT("SCAN_ReadLabelMsg"));
+				else
+					bRequestPending = TRUE;
+			}
+
+			return TRUE;
+
+		case UM_STARTSCANNING:
+
+			dwResult = SCAN_Open(szScannerName, &hScanner);
+			if ( dwResult != E_SCN_SUCCESS )
+			{	
+				ErrorExit(hWnd, IDS_COMMAND1, TEXT("SCAN_Open"));
+				break;
+			}
+
+			dwResult = SCAN_Enable(hScanner);
+			if ( dwResult != E_SCN_SUCCESS )
+			{
+				ErrorExit(hWnd, IDS_COMMAND1, TEXT("SCAN_Enable"));
+				break;
+			}
+
+			//set CE sound params
+			SCAN_PARAMS scan_params;
+			memset(&scan_params,0,sizeof(scan_params));
+			SI_INIT(&scan_params);
+			dwResult = SCAN_GetScanParameters(hScanner,&scan_params);
+			SI_SET_FIELD(&scan_params,dwDecodeLedTime,250);
+			if(bUseSound)
+			{
+				SI_SET_STRING(&scan_params,szWaveFile,_T("\\Windows\\Default.wav"));
+				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,0);
+				SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,0);
+			}
+			else
+			{
+				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,50);
+				SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,2000);
+			}
+			SCAN_SetScanParameters(hScanner,&scan_params);
+
+			lpScanBuffer = SCAN_AllocateBuffer(TRUE, dwScanSize);
+			if (lpScanBuffer == NULL)
+			{
+				ErrorExit(hWnd, IDS_COMMAND1, TEXT("SCAN_AllocateBuffer"));
+				return TRUE;
+			}
+
+			dwResult = SCAN_ReadLabelMsg(hScanner,
+										 lpScanBuffer,
+										 hWnd,
+										 UM_SCAN,
+										 dwScanTimeout,
+										 NULL);
+			if ( dwResult != E_SCN_SUCCESS )
+				ErrorExit(hWnd, IDS_COMMAND1, TEXT("SCAN_ReadLabelMsg"));
+			else
+				bRequestPending = TRUE;
+
+			break;
+
+			return TRUE;
+
+		case UM_STOPSCANNING:
+
+			if (!bStopScanning && bRequestPending)													
+				SCAN_Flush(hScanner);
+
+			if (!bRequestPending)			
+			{							 
+				SCAN_Disable(hScanner);
+
+				if (lpScanBuffer)
+					SCAN_DeallocateBuffer(lpScanBuffer);
+
+				SCAN_Close(hScanner);
+
+				EndDialog(hWnd, 0);
+			}
+			bStopScanning = TRUE;
+
+			return TRUE;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
    }
@@ -390,4 +565,41 @@ void CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont)
 	lstrcpy(g_lf.lfFaceName, szFont);
 	g_lf.lfWeight = lWeight;
 	g_hfont = CreateFontIndirect(&g_lf);  // Create the font.
+}
+
+LPTSTR LoadMsg(UINT uID, LPTSTR lpBuffer, int nBufSize)
+{
+	if (!LoadString(g_hInst, uID, lpBuffer, nBufSize))
+		wcscpy(lpBuffer, TEXT(""));
+
+	return lpBuffer;
+}
+
+//----------------------------------------------------------------------------
+//
+//  FUNCTION:   ErrorExit(HWND, UINT, LPTSTR)
+//
+//  PURPOSE:    Handle critical errors and exit dialog. 
+//
+//  PARAMETERS:
+//      hwnd     - handle to the dialog box. 
+//      uID		 - ID of the message string to be displayed 
+//      szFunc   - function name if it's an API function failure 
+//
+//  RETURN VALUE:
+//      None.
+//
+//----------------------------------------------------------------------------
+void ErrorExit(HWND hwnd, UINT uID, LPTSTR szFunc)
+{
+	TCHAR szMsg[256];
+	TCHAR szBuf[256];
+
+	if (szFunc == NULL)
+		wcscpy(szMsg, LoadMsg(uID, szBuf, countof(szBuf)));
+	else
+		wsprintf(szMsg, TEXT("%s %s"), szFunc, 
+					LoadMsg(uID, szBuf, countof(szBuf)));
+	MessageBox(NULL, szMsg, NULL, MB_OK);
+	SendMessage(hwnd,UM_STOPSCANNING,0,0L);
 }

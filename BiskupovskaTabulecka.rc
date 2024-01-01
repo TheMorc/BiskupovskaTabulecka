@@ -98,9 +98,9 @@ FONT 8, "System"
 BEGIN
     ICON            IDI_BISKUPOVSKATABULECKA,IDC_STATIC,8,20,20,20
     LTEXT           "Biskupovská Tabulecka",IDC_APPNAME,30,18,110,12,SS_NOPREFIX
-    CTEXT           "Copyright (C) 2008 Motorola\nCopyright (C) 2023 Morc",IDC_STATIC,0,111,140,20
+    CTEXT           "Copyright (C) 2008 Motorola\nCopyright (C) 2023, 2024 Morc",IDC_STATIC,0,111,140,20
     CTEXT           "",IDC_VERSION,30,29,77,10
-	LTEXT           "Testuvacka vyvinutá špeciálne pre Motorolu MC75 ako pokus o sprostost kerá sa pripája na tabulecku a dovoluje jej obsah efektívne manipulovat",IDC_DISCLAIMER,6,56,128,43
+    LTEXT           "Testuvacka vyvinutá špeciálne pre Motorolu MC75 ako pokus o sprostost kerá sa pripája na tabulecku a dovoluje jej obsah efektívne manipulovat",IDC_DISCLAIMER,6,56,128,43
     LTEXT           "______________________________________",IDC_STATIC,0,36,140,8
     LTEXT           "_____________________________________",IDC_STATIC,0,99,140,8
 END
@@ -197,13 +197,30 @@ END
 STRINGTABLE 
 BEGIN
     IDS_APP_TITLE           "Tabulecka"
+    IDS_SCAN_FAIL           "Dosralo sa to"
     IDC_BISKUPOVSKATABULECKA "BiskupovskaTabulecka"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_HELP                "T"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_COMMAND1            "Done "
+END
+
+STRINGTABLE 
+BEGIN
     IDS_CAP_FILE            "F"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_CAP_WANOPERATIONS   "File"
+    IDS_VERSION             "1.0"
     IDS_CAP_HELP            "Help"
-    IDS_VERSION             VER_VERSION_STR
 END
 
 #endif    // Slovak resources

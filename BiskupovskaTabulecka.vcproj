@@ -265,6 +265,7 @@
 				Optimization="2"
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;ARMV4I;UNDER_CE=$(CEVER);_WIN32_WCE=$(CEVER);$(CePlatform);UNICODE"
 				RuntimeLibrary="1"
+				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/BiskupovskaTabulecka.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -289,7 +290,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:$(CESubsystem) /MACHINE:THUMB "
-				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib cellcore.lib sms.lib Ws2.lib"
+				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib ScnAPI32.lib"
 				OutputFile="$(PlatformName)\$(ConfigurationName)/BiskupovskaTabulecka.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -1047,6 +1048,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath=".\BasicScan.h"
+				>
+			</File>
 			<File
 				RelativePath=".\BiskupovskaTabulecka.cpp"
 				>

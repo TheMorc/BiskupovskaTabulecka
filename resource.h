@@ -2,8 +2,11 @@
 // Microsoft Visual C++ generated include file.
 // Used by BiskupovskaTabulecka.rc
 //
+#define VER_VERSION_MINOR               0
 #define IDS_APP_TITLE                   1
+#define VER_VERSION_MAJOR               1
 #define IDS_HELLO                       2
+#define IDS_SCAN_FAIL                   2
 #define IDC_WANSAMPLE                   3
 #define IDC_BISKUPOVSKATABULECKA        3
 #define IDI_WANSAMPLE                   101
@@ -43,15 +46,6 @@
 #define IDM_Operation                   40025
 #define IDS_CAP_HELP                    40027
 #define ID_Menu                         40028
-
-#define STR2(s) #s
-#define STR(s) STR2(s)
-
-#define VER_VERSION_MAJOR 1
-#define VER_VERSION_MINOR 0
-
-#define VER_VERSION VER_VERSION_MAJOR, VER_VERSION_MINOR
-#define VER_VERSION_STR STR(VER_VERSION_MAJOR) "." STR(VER_VERSION_MINOR) 
 
 // Next default values for new objects
 // 
