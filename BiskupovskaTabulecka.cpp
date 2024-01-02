@@ -50,6 +50,7 @@ ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
 BOOL				InitInstance	(HINSTANCE, int);
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
+
 HWND				CreateRpCommandBar(HWND);
 void                CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont);
 void				CreateListView(HWND hDlg);
@@ -66,6 +67,12 @@ BOOL			bStopScanning			= FALSE;
 
 //use sound instead of a beep
 BOOL			bUseSound				= FALSE;
+
+//table specific
+void		RequestTable();
+std::set<_bstr_t> deviceColumns;
+std::vector<_bstr_t> deviceData;
+int deviceDataCount = 0;
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
@@ -245,7 +252,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             s_sai.cbSize = sizeof (s_sai);
 			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc, NULL);
 			g_hSubMenu = (HMENU)SendMessage(g_hwndCB, SHCMBM_GETSUBMENU, 0, IDM_FILE);
-			CreateListView(hDlg);
+			
 			break;
 
 		case WM_PAINT:
@@ -263,6 +270,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_ACTIVATE:
             // Notify shell of our activate message
 			SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
+			RequestTable();
+			CreateListView(hDlg);
 			switch(LOWORD(wParam))
 			{
 				case WA_INACTIVE:
@@ -498,32 +507,9 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-// **************************************************************************
-// Function Name: CreateListView
-//
-// Arguments: the window handle for the dlg which contain the listview
-//
-// Return Values:
-// 
-// Description:  create the list view which holds the TABULEÈKA!
-// **************************************************************************
-void CreateListView(HWND hDlg)
+void RequestTable()
 {
-	LVCOLUMN	lvColumn;
-	int			nWidth;
-	RECT		rect;
-
-	g_hwndList = GetDlgItem(hDlg, IDC_INFO);
-	CreateDisplayFont(13, 700, _T("MS Sans Serif"));
-	SendMessage(g_hwndList,WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
-
-	//generate two titles
-	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
-    lvColumn.fmt = LVCFMT_LEFT;
-    GetWindowRect(g_hwndList,&rect);
-   	nWidth = (rect.right - rect.left)/2;
-	 
-	//httprequest no xml parse
+	//basic httprequest no xml parse
 	//
 	//TCHAR* xmlData = HTTPReq(_T("http://192.168.1.125/tabulecka_xml.php"));
 	//std::wstring wStr(xmlData);
@@ -550,10 +536,6 @@ void CreateListView(HWND hDlg)
 	short tEmpty;
 	_bstr_t bCol;
 	_bstr_t bRow;
-
-	std::set<_bstr_t> deviceColumns;
-	std::vector<_bstr_t> deviceData;
-	int deviceDataCount = 0;
 
 	_variant_t vXMLSrc;
 	HRESULT hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
@@ -583,6 +565,34 @@ void CreateListView(HWND hDlg)
 			}
 		}
 	}
+
+}
+
+// **************************************************************************
+// Function Name: CreateListView
+//
+// Arguments: the window handle for the dlg which contain the listview
+//
+// Return Values:
+// 
+// Description:  create the list view which holds the TABULEÈKA!
+// **************************************************************************
+void CreateListView(HWND hDlg)
+{
+	LVCOLUMN	lvColumn;
+	int			nWidth;
+	RECT		rect;
+
+	g_hwndList = GetDlgItem(hDlg, IDC_INFO);
+	CreateDisplayFont(13, 700, _T("MS Sans Serif"));
+	SendMessage(g_hwndList,WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
+
+	//generate two titles
+	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
+    lvColumn.fmt = LVCFMT_LEFT;
+    GetWindowRect(g_hwndList,&rect);
+   	nWidth = (rect.right - rect.left)/2;
+	 
 	
 	int columnCount = 0;
 	std::set<_bstr_t>::iterator it;
@@ -596,27 +606,24 @@ void CreateListView(HWND hDlg)
 		//OutputDebugString(column.GetBSTR());
 	}
 
+
 	int devDataColumnIndex = 0;
 	int currentDevice = 0;
 	for	(int i = 0; i < deviceDataCount; i++)
 	{
 		LV_ITEM lvI;
+		lvI.mask = LVIF_TEXT;
 		lvI.iItem = currentDevice;
 		lvI.iSubItem = 0;
 		lvI.pszText = _T("0");
 		lvI.cchTextMax = 31999;
+
 		if (devDataColumnIndex == 0){
 			ListView_InsertItem(g_hwndList,&lvI);
 			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
 		}else
 			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
-		//char buf[100];
-		//sprintf(buf,"%d %s\n", i, deviceData[i].GetBSTR());
-		//wchar_t wtext[100];
-		////mbstowcs(wtext, buf, strlen(buf));
-		//LPWSTR ptr = wtext;
-		//OutputDebugString(ptr);
-		//OutputDebugString(deviceData[i].GetBSTR());
+
 		if (devDataColumnIndex > columnCount-1){
 			devDataColumnIndex = 0;
 			currentDevice++;
@@ -625,17 +632,6 @@ void CreateListView(HWND hDlg)
 			devDataColumnIndex++;
 		}
 	}
-
-	
-
-	//lvI.mask = LVIF_TEXT;
-    //lvI.iSubItem = 0;
-
-	/*while(OptionList[i] != NULL)
-	{
-		
-		i++;
-	}*/
 }
 
 // **************************************************************************
