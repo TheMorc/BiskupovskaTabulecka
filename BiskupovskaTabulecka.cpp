@@ -19,7 +19,14 @@
 #include <ScanCAPI.h>
 #include <aygshell.h>
 #include "resource.h"
-
+#include <wininet.h>
+#include <msxml2.h>
+#include <objsafe.h>
+#include <ocidl.h>
+#include <iostream>
+#include <vector>
+#include <comutil.h>
+#include <set>
 
 #define MAX_LOADSTRING 100
 #define THREAD_TIMEOUT 7000
@@ -47,6 +54,7 @@ HWND				CreateRpCommandBar(HWND);
 void                CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont);
 void				CreateListView(HWND hDlg);
 void				ErrorExit(HWND, UINT, LPTSTR);
+TCHAR* HTTPReq(wchar_t*);
 
 HANDLE			hScanner				= NULL;
 LPSCAN_BUFFER	lpScanBuffer			= NULL;
@@ -57,7 +65,7 @@ BOOL			bRequestPending			= FALSE;
 BOOL			bStopScanning			= FALSE;
 
 //use sound instead of a beep
-BOOL			bUseSound				= TRUE;
+BOOL			bUseSound				= FALSE;
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
@@ -499,14 +507,12 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 // 
 // Description:  create the list view which hold the list of WAN info
 // **************************************************************************
-LPTSTR testList[] = {_T("this is a text"),_T("this"), NULL};
-
 void CreateListView(HWND hDlg)
 {
 	LVCOLUMN	lvColumn;
 	int			nWidth;
 	RECT		rect;
-	LPTSTR      *OptionList;
+	//LPTSTR      *OptionList;
 	LV_ITEM     lvI;
 	int         i = 0;
 
@@ -521,28 +527,110 @@ void CreateListView(HWND hDlg)
    	nWidth = (rect.right - rect.left)/2;
 	lvColumn.cx = nWidth - 8;
 
-   	lvColumn.iSubItem = 0;
-	lvColumn.pszText = _T("Option");
-	ListView_InsertColumn(g_hwndList, 0, &lvColumn);
+   	//lvColumn.iSubItem = 0;
+	//lvColumn.pszText = _T("Option");
+	//ListView_InsertColumn(g_hwndList, 0, &lvColumn);
 
-	lvColumn.iSubItem = 1;
-	lvColumn.pszText = _T("Value");
-	lvColumn.cx = nWidth + 5;
-	ListView_InsertColumn(g_hwndList, 1, &lvColumn);
+	//lvColumn.iSubItem = 1;
+	//lvColumn.pszText = _T("Value");
+	//lvColumn.cx = nWidth + 5;
+	//ListView_InsertColumn(g_hwndList, 1, &lvColumn);
+	 
+	//httprequest no xml parse
+	//
+	//TCHAR* xmlData = HTTPReq(_T("http://192.168.1.125/tabulecka_xml.php"));
+	//std::wstring wStr(xmlData);
+	//LPWSTR stringTest = const_cast<LPWSTR>(wStr.c_str());
 
-	OptionList = testList;
+	//IXMLHTTPRequest hanging/other problems
+	//
+	//HRESULT hr;
+	//IXMLHTTPRequest* xmlReq;
+	//hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	//hr = CoCreateInstance(CLSID_XMLHTTP30, NULL, CLSCTX_INPROC, IID_IXMLHTTPRequest, (LPVOID *)&xmlReq);
+	//hr = xmlReq->open(L"GET", L"http://192.168.1.125/tabulecka_xml.php", _variant_t(FALSE), _variant_t(), _variant_t());
+	//_variant_t body;	
+	//hr = xmlReq->get_responseBody(body.GetAddress());
+	//LPWSTR stringTest = const_cast<LPWSTR>(std::wstring(body).c_str());
+	//MessageBox(hDlg, _T("hh"), _T("test"), MB_OK);
+	
+	//ce works
+	IXMLDOMDocument *iXMLDoc		= NULL;
+	IXMLDOMElement *iXMLElm			= NULL;
+	IXMLDOMNodeList *iXMLChildList	= NULL;
+	IXMLDOMNode *iXMLItem			= NULL;
+	long lLength = 1;
+	short tEmpty;
+	_bstr_t bCol;
+	_bstr_t bRow;
 
-	lvI.mask = LVIF_TEXT;
-    lvI.iSubItem = 0;
+	std::set<_bstr_t> deviceColumns;
+	std::vector<_bstr_t> deviceData;
 
-	while(OptionList[i] != NULL)
+	_variant_t vXMLSrc;
+	HRESULT hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	hr = CoCreateInstance (CLSID_DOMDocument, NULL,CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_IXMLDOMDocument, (LPVOID *)&iXMLDoc);
+	if(iXMLDoc){
+		iXMLDoc->put_async(VARIANT_FALSE);
+		VariantInit( &vXMLSrc );
+		vXMLSrc.vt = VT_BSTR;
+		vXMLSrc.bstrVal = SysAllocString(L"http://192.168.1.125/tabulecka_xml.php");
+		
+		hr = iXMLDoc->load(vXMLSrc, &tEmpty);
+		SysFreeString(vXMLSrc.bstrVal);
+		
+		iXMLDoc->get_documentElement(&iXMLElm);
+		iXMLElm->selectNodes(L"device//",&iXMLChildList);
+		iXMLChildList->get_length(&lLength);
+		
+		int intCount = lLength;
+
+		for (int x=0;x<lLength;x++){
+			iXMLChildList->get_item(x, &iXMLItem);
+			iXMLItem->get_nodeName(&bCol.GetBSTR());
+			iXMLItem->get_text(&bRow.GetBSTR());
+			if (wcscmp(_bstr_t("#text"),bCol) != 0) {
+				deviceColumns.insert(bCol.GetBSTR());
+				deviceData.push_back(bRow);
+			}
+		}
+	}
+	
+	int index = 1;
+	std::set<_bstr_t>::iterator it;
+	for (it = deviceColumns.begin(); it != deviceColumns.end(); ++it, ++index){
+		_bstr_t column = *it; 
+		lvColumn.iSubItem = index;
+		lvColumn.pszText = column.GetBSTR()+2;
+		lvColumn.cx = nWidth + 5;
+		ListView_InsertColumn(g_hwndList, index, &lvColumn);
+		//OutputDebugString(column.GetBSTR());
+		//index++;
+	}
+
+	//int devDataIndex = 0;
+	//for (it = deviceData.begin(); it != deviceData.end(); ++it){
+	//	_bstr_t column = *it; 
+	//	lvColumn.iSubItem = index;
+	//	lvColumn.pszText = column.GetBSTR()+2;
+	//	lvColumn.cx = nWidth + 5;
+	//	ListView_InsertColumn(g_hwndList, index, &lvColumn);
+	//	//OutputDebugString(column.GetBSTR());
+	//	//index++;
+	//}
+	
+
+	//lvI.mask = LVIF_TEXT;
+    //lvI.iSubItem = 0;
+
+	/*while(OptionList[i] != NULL)
 	{
 		lvI.iItem = i;
-		lvI.pszText = OptionList[i];
-	    lvI.cchTextMax = wcslen(lvI.pszText);
+		lvI.pszText = _T("hhh");
+		lvI.cchTextMax = 31999;
     	ListView_InsertItem(g_hwndList,&lvI);
 		i++;
-	}
+	}*/
 }
 
 // **************************************************************************
@@ -586,7 +674,7 @@ LPTSTR LoadMsg(UINT uID, LPTSTR lpBuffer, int nBufSize)
 //      uID		 - ID of the message string to be displayed 
 //      szFunc   - function name if it's an API function failure 
 //
-//  RETURN VALUE:
+//  REVALUE:
 //      None.
 //
 //----------------------------------------------------------------------------
@@ -602,4 +690,46 @@ void ErrorExit(HWND hwnd, UINT uID, LPTSTR szFunc)
 					LoadMsg(uID, szBuf, countof(szBuf)));
 	MessageBox(NULL, szMsg, NULL, MB_OK);
 	SendMessage(hwnd,UM_STOPSCANNING,0,0L);
+}
+
+TCHAR* HTTPReq(LPWSTR url)
+{
+	DWORD dwSize = 0;
+	char *lpBufferA;
+	TCHAR *lpBufferW;
+
+	HINTERNET hInternet = InternetOpen(L"HTTP Request", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+
+	if (hInternet)
+	{
+		HINTERNET hConnect = InternetOpenUrl(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+
+		if (hConnect)
+		{
+			
+			lpBufferA = new CHAR [32000];
+			
+			if (InternetReadFile(hConnect, (LPVOID)lpBufferA, 31999, &dwSize))
+			{
+				if(dwSize != 0)
+				{
+					lpBufferA [dwSize] = '\0';                 
+
+					dwSize = MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, NULL, 0);
+				 
+					lpBufferW = new TCHAR [dwSize];
+
+					MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, lpBufferW, dwSize);
+				}
+			}
+
+			InternetCloseHandle(hConnect);
+		}
+		InternetCloseHandle(hInternet);
+	}
+	else
+	{
+	}
+	
+	return lpBufferW;
 }
