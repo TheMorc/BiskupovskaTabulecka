@@ -77,6 +77,8 @@ IDM_MENU MENU
 BEGIN
     POPUP "File"
     BEGIN
+        MENUITEM "Refresh",                     IDM_REFRESH
+        MENUITEM SEPARATOR
         MENUITEM "Exit",                        IDM_EXIT
     END
     POPUP "Help"
@@ -109,7 +111,7 @@ IDD_INFOPAGE DIALOG  0, 0, 163, 174
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "List1",IDC_INFO,"SysListView32",LVS_REPORT | WS_TABSTOP,0,1,163,148
+    CONTROL         "List1",IDC_INFO,"SysListView32",LVS_REPORT | WS_TABSTOP,0,0,163,165
 END
 
 
@@ -143,8 +145,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 156
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 170
+        BOTTOMMARGIN, 165
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -46,13 +46,15 @@
 #define IDM_Operation                   40025
 #define IDS_CAP_HELP                    40027
 #define ID_Menu                         40028
+#define ID_FILE_REFRESH                 40029
+#define IDM_REFRESH                     40030
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        109
-#define _APS_NEXT_COMMAND_VALUE         40029
+#define _APS_NEXT_COMMAND_VALUE         40031
 #define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

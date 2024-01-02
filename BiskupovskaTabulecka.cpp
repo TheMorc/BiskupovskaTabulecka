@@ -236,6 +236,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					SendMessage(hWnd, WM_DESTROY, 0, 0);
 					break;
 
+				case IDM_REFRESH:
+					deviceColumns.clear();
+					deviceData.clear();
+					deviceDataCount = 0;
+					RequestTable();
+					ListView_DeleteAllItems(g_hwndList);
+					CreateListView(hDlg);
+					break;
+
 				case IDOK:
 					SendMessage (hWnd, WM_CLOSE, 0, 0);
 					break;
