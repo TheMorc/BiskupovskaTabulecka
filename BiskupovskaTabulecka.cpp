@@ -505,16 +505,13 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 //
 // Return Values:
 // 
-// Description:  create the list view which hold the list of WAN info
+// Description:  create the list view which holds the TABULEÈKA!
 // **************************************************************************
 void CreateListView(HWND hDlg)
 {
 	LVCOLUMN	lvColumn;
 	int			nWidth;
 	RECT		rect;
-	//LPTSTR      *OptionList;
-	LV_ITEM     lvI;
-	int         i = 0;
 
 	g_hwndList = GetDlgItem(hDlg, IDC_INFO);
 	CreateDisplayFont(13, 700, _T("MS Sans Serif"));
@@ -525,16 +522,6 @@ void CreateListView(HWND hDlg)
     lvColumn.fmt = LVCFMT_LEFT;
     GetWindowRect(g_hwndList,&rect);
    	nWidth = (rect.right - rect.left)/2;
-	lvColumn.cx = nWidth - 8;
-
-   	//lvColumn.iSubItem = 0;
-	//lvColumn.pszText = _T("Option");
-	//ListView_InsertColumn(g_hwndList, 0, &lvColumn);
-
-	//lvColumn.iSubItem = 1;
-	//lvColumn.pszText = _T("Value");
-	//lvColumn.cx = nWidth + 5;
-	//ListView_InsertColumn(g_hwndList, 1, &lvColumn);
 	 
 	//httprequest no xml parse
 	//
@@ -566,6 +553,7 @@ void CreateListView(HWND hDlg)
 
 	std::set<_bstr_t> deviceColumns;
 	std::vector<_bstr_t> deviceData;
+	int deviceDataCount = 0;
 
 	_variant_t vXMLSrc;
 	HRESULT hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
@@ -583,41 +571,61 @@ void CreateListView(HWND hDlg)
 		iXMLElm->selectNodes(L"device//",&iXMLChildList);
 		iXMLChildList->get_length(&lLength);
 		
-		int intCount = lLength;
-
 		for (int x=0;x<lLength;x++){
 			iXMLChildList->get_item(x, &iXMLItem);
 			iXMLItem->get_nodeName(&bCol.GetBSTR());
 			iXMLItem->get_text(&bRow.GetBSTR());
 			if (wcscmp(_bstr_t("#text"),bCol) != 0) {
 				deviceColumns.insert(bCol.GetBSTR());
-				deviceData.push_back(bRow);
+				deviceData.push_back(bRow.GetBSTR());
+				//OutputDebugString(bRow);
+				deviceDataCount++;
 			}
 		}
 	}
 	
-	int index = 1;
+	int columnCount = 0;
 	std::set<_bstr_t>::iterator it;
-	for (it = deviceColumns.begin(); it != deviceColumns.end(); ++it, ++index){
+	for (it = deviceColumns.begin(); it != deviceColumns.end(); ++it, ++columnCount){
 		_bstr_t column = *it; 
-		lvColumn.iSubItem = index;
+		lvColumn.iSubItem = columnCount;
 		lvColumn.pszText = column.GetBSTR()+2;
-		lvColumn.cx = nWidth + 5;
-		ListView_InsertColumn(g_hwndList, index, &lvColumn);
+		int cxModifier = 320/column.length();
+		lvColumn.cx = nWidth - 20 - cxModifier;
+		ListView_InsertColumn(g_hwndList, columnCount, &lvColumn);
 		//OutputDebugString(column.GetBSTR());
-		//index++;
 	}
 
-	//int devDataIndex = 0;
-	//for (it = deviceData.begin(); it != deviceData.end(); ++it){
-	//	_bstr_t column = *it; 
-	//	lvColumn.iSubItem = index;
-	//	lvColumn.pszText = column.GetBSTR()+2;
-	//	lvColumn.cx = nWidth + 5;
-	//	ListView_InsertColumn(g_hwndList, index, &lvColumn);
-	//	//OutputDebugString(column.GetBSTR());
-	//	//index++;
-	//}
+	int devDataColumnIndex = 0;
+	int currentDevice = 0;
+	for	(int i = 0; i < deviceDataCount; i++)
+	{
+		LV_ITEM lvI;
+		lvI.iItem = currentDevice;
+		lvI.iSubItem = 0;
+		lvI.pszText = _T("0");
+		lvI.cchTextMax = 31999;
+		if (devDataColumnIndex == 0){
+			ListView_InsertItem(g_hwndList,&lvI);
+			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
+		}else
+			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
+		//char buf[100];
+		//sprintf(buf,"%d %s\n", i, deviceData[i].GetBSTR());
+		//wchar_t wtext[100];
+		////mbstowcs(wtext, buf, strlen(buf));
+		//LPWSTR ptr = wtext;
+		//OutputDebugString(ptr);
+		//OutputDebugString(deviceData[i].GetBSTR());
+		if (devDataColumnIndex > columnCount-1){
+			devDataColumnIndex = 0;
+			currentDevice++;
+			i--;
+		}else{		
+			devDataColumnIndex++;
+		}
+	}
+
 	
 
 	//lvI.mask = LVIF_TEXT;
@@ -625,10 +633,7 @@ void CreateListView(HWND hDlg)
 
 	/*while(OptionList[i] != NULL)
 	{
-		lvI.iItem = i;
-		lvI.pszText = _T("hhh");
-		lvI.cchTextMax = 31999;
-    	ListView_InsertItem(g_hwndList,&lvI);
+		
 		i++;
 	}*/
 }
