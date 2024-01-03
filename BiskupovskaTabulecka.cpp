@@ -71,6 +71,8 @@ void		RequestTable();
 std::set<_bstr_t> deviceColumns;
 std::vector<_bstr_t> deviceData;
 int deviceDataCount = 0;
+int columnCount = 0;
+BOOL tableRefresh = FALSE;
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
@@ -158,6 +160,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	g_hInst = hInstance;		// Store instance handle in our global variable
 
+	//set beachball to entertain user while the app is loading
+	SetCursor(LoadCursor(NULL, IDC_WAIT));
+	
 	LoadString(hInstance, IDC_WANSAMPLE, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 
@@ -235,12 +240,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 
 				case IDM_REFRESH:
+					SetCursor(LoadCursor(NULL, IDC_WAIT));
 					deviceColumns.clear();
 					deviceData.clear();
 					deviceDataCount = 0;
 					RequestTable();
 					ListView_DeleteAllItems(g_hwndList);
+					for(int col = 0; col <= columnCount; col++)
+						//this actually still leaves three columns in the lv, workaround in UpdateListView()
+						ListView_DeleteColumn(g_hwndList, col);
+					columnCount = 0;
+					tableRefresh = TRUE;
 					CreateListView(hDlg);
+					SetCursor(LoadCursor(NULL, IDC_ARROW));
 					break;
 
 				case IDOK:
@@ -279,6 +291,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
 			RequestTable();
 			CreateListView(hDlg);
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			switch(LOWORD(wParam))
 			{
 				case WA_INACTIVE:
@@ -600,8 +613,6 @@ void CreateListView(HWND hDlg)
     GetWindowRect(g_hwndList,&rect);
    	nWidth = (rect.right - rect.left)/2;
 	 
-	
-	int columnCount = 0;
 	std::set<_bstr_t>::iterator it;
 	for (it = deviceColumns.begin(); it != deviceColumns.end(); ++it, ++columnCount){
 		_bstr_t column = *it; 
@@ -609,10 +620,12 @@ void CreateListView(HWND hDlg)
 		lvColumn.pszText = column.GetBSTR()+2;
 		int cxModifier = 320/column.length();
 		lvColumn.cx = nWidth - 20 - cxModifier;
-		ListView_InsertColumn(g_hwndList, columnCount, &lvColumn);
+		if (columnCount < 3 && tableRefresh) //workaround to account for three nonremovable columns when refreshing
+			ListView_SetColumn(g_hwndList, columnCount, &lvColumn);
+		else	
+			ListView_InsertColumn(g_hwndList, columnCount, &lvColumn);
 		//OutputDebugString(column.GetBSTR());
 	}
-
 
 	int devDataColumnIndex = 0;
 	int currentDevice = 0;
