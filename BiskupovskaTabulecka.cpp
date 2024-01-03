@@ -175,7 +175,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	MyRegisterClass(hInstance, szWindowClass);
 	
-	hWnd = CreateWindow(szWindowClass, szTitle, WS_VISIBLE | WS_NONAVDONEBUTTON ,
+	hWnd = CreateWindow(szWindowClass, szTitle, WS_VISIBLE ,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
 	if (!hWnd)
 	{	
