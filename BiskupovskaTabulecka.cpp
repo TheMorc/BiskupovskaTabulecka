@@ -618,8 +618,9 @@ void CreateListView(HWND hDlg)
 		_bstr_t column = *it; 
 		lvColumn.iSubItem = columnCount;
 		lvColumn.pszText = column.GetBSTR()+2;
-		int cxModifier = 320/column.length();
-		lvColumn.cx = nWidth - 20 - cxModifier;
+		int cxModifier = 320/(column.length());		
+		int cxModifier2 = ((column.length()-2) <= 5) ? 20 : 0; //-2 on the length to account for array sorting
+		lvColumn.cx = nWidth - cxModifier2 - cxModifier;
 		if (columnCount < 3 && tableRefresh) //workaround to account for three nonremovable columns when refreshing
 			ListView_SetColumn(g_hwndList, columnCount, &lvColumn);
 		else	
