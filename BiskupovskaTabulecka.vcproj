@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:$(CESubsystem) /MACHINE:THUMB "
-				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib ScnAPI32.lib wininet.lib libcpmt.lib comsuppwd.lib uuid.lib"
+				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib ScnAPI32.lib wininet.lib comsuppwd.lib"
 				OutputFile="$(PlatformName)\$(ConfigurationName)/BiskupovskaTabulecka.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

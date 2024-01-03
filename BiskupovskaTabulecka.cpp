@@ -18,15 +18,13 @@
 #include <commctrl.h>
 #include <ScanCAPI.h>
 #include <aygshell.h>
-#include "resource.h"
 #include <wininet.h>
 #include <msxml2.h>
-#include <objsafe.h>
-#include <ocidl.h>
-#include <iostream>
-#include <vector>
 #include <comutil.h>
+#include <vector>
 #include <set>
+
+#include "resource.h"
 
 #define MAX_LOADSTRING 100
 #define THREAD_TIMEOUT 7000
