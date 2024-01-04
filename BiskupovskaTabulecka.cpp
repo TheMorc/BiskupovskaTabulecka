@@ -290,9 +290,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_ACTIVATE:
             // Notify shell of our activate message
 			SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
-			RequestTable();
-			CreateListView(hDlg);
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+			if (firstLoad) //HACK!!!
+			{
+				RequestTable();
+				CreateListView(hDlg);
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
+				firstLoad = FALSE;
+			}
+
+            
+
 			switch(LOWORD(wParam))
 			{
 				case WA_INACTIVE:
