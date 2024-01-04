@@ -591,8 +591,8 @@ void RequestTable()
 			if (wcscmp(_bstr_t("#text"),bCol) != 0) {
 				deviceColumns.insert(bCol.GetBSTR());
 				deviceData.push_back(bRow.GetBSTR());
-				//OutputDebugString(bRow);
 				deviceDataCount++;
+				//OutputDebugString(bRow);
 			}
 		}
 	}
@@ -640,25 +640,27 @@ void CreateListView(HWND hDlg)
 	}
 
 	int devDataColumnIndex = 0;
-	int currentDevice = 0;
+	deviceCount = 0;
 	for	(int i = 0; i < deviceDataCount; i++)
 	{
 		LV_ITEM lvI;
-		lvI.mask = LVIF_TEXT;
-		lvI.iItem = currentDevice;
+		lvI.mask = LVIF_TEXT | LVIF_STATE;
+		lvI.iItem = deviceCount;
 		lvI.iSubItem = 0;
 		lvI.pszText = _T("0");
 		lvI.cchTextMax = 31999;
+		lvI.state = 0;
+		lvI.stateMask = 0;
 
-		if (devDataColumnIndex == 0){
+		if (devDataColumnIndex == 0){  //HACK!!!!
 			ListView_InsertItem(g_hwndList,&lvI);
-			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
+			ListView_SetItemText(g_hwndList,deviceCount, devDataColumnIndex,  deviceData[i].GetBSTR());
 		}else
-			ListView_SetItemText(g_hwndList,currentDevice, devDataColumnIndex,  deviceData[i].GetBSTR());
+			ListView_SetItemText(g_hwndList,deviceCount, devDataColumnIndex,  deviceData[i].GetBSTR());
 
 		if (devDataColumnIndex > columnCount-1){
 			devDataColumnIndex = 0;
-			currentDevice++;
+			deviceCount++;
 			i--;
 		}else{		
 			devDataColumnIndex++;
