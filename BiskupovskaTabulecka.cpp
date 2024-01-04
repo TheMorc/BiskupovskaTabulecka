@@ -41,8 +41,6 @@ static SHACTIVATEINFO s_sai;
 HFONT   g_hfont = NULL;							// The handle for display font
 LOGFONT g_lf;									// Font structure
 
-TCHAR   g_pszInfo[50][50];// The list hold the modem info
-
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
 BOOL				InitInstance	(HINSTANCE, int);
@@ -218,8 +216,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent, nRet = 0;
 	DWORD			dwResult;
-	TCHAR			szLabelType[10];
-	TCHAR			szLen[MAX_PATH];
 	TCHAR			szMsgBuf[256];
 	LPSCAN_BUFFER	lpScanBuf;
 	static HWND hDlg;
@@ -360,9 +356,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				case E_SCN_SUCCESS:
 					wsprintf(szMsgBuf, (LPTSTR)SCNBUF_GETDATA(lpScanBuffer));
-					wsprintf(szLabelType, TEXT("0x%.2X"), SCNBUF_GETLBLTYP(lpScanBuf));
-					wsprintf(szLen, TEXT("%d"), SCNBUF_GETLEN(lpScanBuf));
-					OutputDebugString(szMsgBuf);
+					//OutputDebugString(szMsgBuf);
 					int scan = _ttoi(szMsgBuf);
 					int actualDeviceID = (deviceCount-scan);
 					ListView_EnsureVisible(g_hwndList, actualDeviceID, FALSE);
