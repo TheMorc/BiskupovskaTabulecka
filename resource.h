@@ -7,15 +7,14 @@
 #define VER_VERSION_MAJOR               1
 #define IDS_HELLO                       2
 #define IDS_SCAN_FAIL                   2
-#define IDC_WANSAMPLE                   3
 #define IDC_BISKUPOVSKATABULECKA        3
-#define IDI_WANSAMPLE                   101
 #define IDI_BISKUPOVSKATABULECKA        101
 #define IDM_MENU                        102
 #define IDD_ABOUTBOX                    103
 #define IDS_HELP                        104
 #define IDD_INFOPAGE                    104
 #define IDD_ANSWER_BOX                  106
+#define IDR_CEUX1                       109
 #define IDS_COMMAND1                    301
 #define IDC_INFO                        1001
 #define IDC_ANSWER                      1005

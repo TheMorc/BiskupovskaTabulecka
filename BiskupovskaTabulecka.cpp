@@ -96,7 +96,7 @@ int WINAPI WinMain(	HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WANSAMPLE);
+	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_BISKUPOVSKATABULECKA);
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0)) 
@@ -126,12 +126,12 @@ ATOM MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 {
 	WNDCLASS	wc;
 
-    wc.style			= CS_HREDRAW | CS_VREDRAW | CS_NOCLOSE;
+    wc.style			= CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc		= (WNDPROC) WndProc;
     wc.cbClsExtra		= 0;
     wc.cbWndExtra		= 0;
     wc.hInstance		= hInstance;
-    wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WANSAMPLE));
+	wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BISKUPOVSKATABULECKA));
     wc.hCursor			= 0;
     wc.hbrBackground	= (HBRUSH) GetStockObject(WHITE_BRUSH);
     wc.lpszMenuName		= 0;
@@ -162,7 +162,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	//set beachball to entertain user while the app is loading
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 	
-	LoadString(hInstance, IDC_WANSAMPLE, szWindowClass, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_BISKUPOVSKATABULECKA, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 
 	hWnd = FindWindow(szWindowClass, szTitle);	
