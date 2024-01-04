@@ -359,12 +359,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 				case E_SCN_SUCCESS:
-				
 					wsprintf(szMsgBuf, (LPTSTR)SCNBUF_GETDATA(lpScanBuffer));
-					
 					wsprintf(szLabelType, TEXT("0x%.2X"), SCNBUF_GETLBLTYP(lpScanBuf));
-
 					wsprintf(szLen, TEXT("%d"), SCNBUF_GETLEN(lpScanBuf));
+					OutputDebugString(szMsgBuf);
+					int scan = _ttoi(szMsgBuf);
+					int actualDeviceID = (deviceCount-scan);
+					ListView_EnsureVisible(g_hwndList, actualDeviceID, FALSE);
+					ListView_SetItemState(g_hwndList, ListView_GetSelectionMark(g_hwndList), 0, LVIS_SELECTED);
+					ListView_SetSelectionMark(g_hwndList, actualDeviceID);
+					ListView_SetItemState(g_hwndList, actualDeviceID, LVIS_SELECTED, LVIS_SELECTED);
 					break;
 			}
 
