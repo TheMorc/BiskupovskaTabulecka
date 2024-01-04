@@ -70,9 +70,10 @@ BOOL			bUseSound				= FALSE;
 void		RequestTable();
 std::set<_bstr_t> deviceColumns;
 std::vector<_bstr_t> deviceData;
-int deviceDataCount = 0;
-int columnCount = 0;
-BOOL tableRefresh = FALSE;
+int deviceDataCount, deviceCount		= 0;
+int columnCount							= 0;
+BOOL tableRefresh						= FALSE;
+BOOL firstLoad							= TRUE;
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
@@ -244,6 +245,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					deviceColumns.clear();
 					deviceData.clear();
 					deviceDataCount = 0;
+					deviceCount = 0;
 					RequestTable();
 					ListView_DeleteAllItems(g_hwndList);
 					for(int col = 0; col <= columnCount; col++)
@@ -271,7 +273,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             s_sai.cbSize = sizeof (s_sai);
 			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc, NULL);
 			g_hSubMenu = (HMENU)SendMessage(g_hwndCB, SHCMBM_GETSUBMENU, 0, IDM_FILE);
-			
 			break;
 
 		case WM_PAINT:
@@ -428,13 +429,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				ErrorExit(hWnd, IDS_COMMAND1, TEXT("SCAN_ReadLabelMsg"));
 			else
 				bRequestPending = TRUE;
-
 			break;
 
 			return TRUE;
 
 		case UM_STOPSCANNING:
-
 			if (!bStopScanning && bRequestPending)													
 				SCAN_Flush(hScanner);
 
