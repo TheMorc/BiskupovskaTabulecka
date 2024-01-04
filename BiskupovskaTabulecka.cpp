@@ -516,7 +516,7 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			
 			LoadStringW(g_hInst, IDS_VERSION, szVersion, MAX_LOADSTRING);
 			SetDlgItemTextW(hDlg, IDC_VERSION, szVersion);
-			CreateDisplayFont(15, 800, _T("MS Sans Serif"));
+			CreateDisplayFont(30, 800, _T("MS Sans Serif"));
         	SendMessageW(GetDlgItem(hDlg, IDC_APPNAME),WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
 			return TRUE; 
 
@@ -613,7 +613,7 @@ void CreateListView(HWND hDlg)
 	// Put the list view in full row select mode
 	ListView_SetExtendedListViewStyle(g_hwndList, ListView_GetExtendedListViewStyle(g_hwndList) | LVS_EX_FULLROWSELECT);
 	
-	CreateDisplayFont(13, 700, _T("MS Sans Serif"));
+	CreateDisplayFont(21, 700, _T("MS Sans Serif"));
 	SendMessage(g_hwndList,WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
 
 	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
@@ -626,8 +626,8 @@ void CreateListView(HWND hDlg)
 		_bstr_t column = *it; 
 		lvColumn.iSubItem = columnCount;
 		lvColumn.pszText = column.GetBSTR()+2;
-		int cxModifier = 320/(column.length());		
-		int cxModifier2 = ((column.length()-2) <= 5) ? 20 : 0; //-2 on the length to account for array sorting
+		int cxModifier = 480/(column.length());		
+		int cxModifier2 = ((column.length()-2) <= 5) ? 50 : 0; //-2 on the length to account for array sorting
 		lvColumn.cx = nWidth - cxModifier2 - cxModifier;
 		if (columnCount < 3 && tableRefresh) //workaround to account for three nonremovable columns when refreshing
 			ListView_SetColumn(g_hwndList, columnCount, &lvColumn);
