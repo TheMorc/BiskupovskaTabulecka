@@ -295,7 +295,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				firstLoad = FALSE;
 			}
 
-            
+            if(LOWORD(wParam) != WA_INACTIVE)
+            {
+				SetFocus(g_hwndList);
+            }
 
 			switch(LOWORD(wParam))
 			{
