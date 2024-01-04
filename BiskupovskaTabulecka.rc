@@ -77,7 +77,10 @@ IDM_MENU MENU
 BEGIN
     POPUP "File"
     BEGIN
+        MENUITEM "Edit selected",               IDM_EDITSELECTED
         MENUITEM "Refresh",                     IDM_REFRESH
+        MENUITEM SEPARATOR
+        MENUITEM "Settings",                    IDM_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        IDM_EXIT
     END
