@@ -615,10 +615,13 @@ void CreateListView(HWND hDlg)
 	RECT		rect;
 
 	g_hwndList = GetDlgItem(hDlg, IDC_INFO);
+
+	// Put the list view in full row select mode
+	ListView_SetExtendedListViewStyle(g_hwndList, ListView_GetExtendedListViewStyle(g_hwndList) | LVS_EX_FULLROWSELECT);
+	
 	CreateDisplayFont(13, 700, _T("MS Sans Serif"));
 	SendMessage(g_hwndList,WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
 
-	//generate two titles
 	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
     lvColumn.fmt = LVCFMT_LEFT;
     GetWindowRect(g_hwndList,&rect);
