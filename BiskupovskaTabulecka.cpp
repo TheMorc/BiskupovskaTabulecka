@@ -419,7 +419,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,50);
+				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,25);
 				SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,2000);
 			}
 			SCAN_SetScanParameters(hScanner,&scan_params);
