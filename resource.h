@@ -31,23 +31,26 @@
 #define IDC_CAPEDIT1                    1021
 #define IDM_MAIN_COMMAND1               40001
 #define IDM_EXIT                        40005
-#define IDS_CAP_TABULECKAOPERATIONS     40021
+#define IDS_CAP_TABULECKAOPERATIONS     40027
 #define IDS_VERSION                     40022
 #define IDM_Operation                   40025
-#define IDS_CAP_ABOUT                   40027
+#define IDS_CAP_EDIT                    40021
 #define ID_FILE_REFRESH                 40029
 #define IDM_REFRESH                     40030
 #define IDM_EDITSELECTED                40032
 #define IDM_SETTINGS                    40034
 #define IDM_ABOUT                       40036
 #define ID_ABOUT_ABOUT                  40037
+#define IDM_EDITCB                      40038
+#define IDM_ADDNEWENTRY             40039
+#define IDM_EDIT                         40041
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
-#define _APS_NEXT_COMMAND_VALUE         40038
+#define _APS_NEXT_COMMAND_VALUE         40042
 #define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
