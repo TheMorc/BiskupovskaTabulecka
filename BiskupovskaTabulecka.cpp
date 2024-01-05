@@ -199,6 +199,58 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		MoveWindow(hWnd, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, FALSE);
 	}
 
+	//registry shitzzzz
+	HKEY key;
+	DWORD keyDisp;
+
+	BYTE UseSoundReg = bUseSound;
+	
+	LONG keyStatus = RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\BiskupovskaTabulecka"), 0, NULL, REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
+	if (keyStatus != ERROR_SUCCESS)
+	{
+		OutputDebugString(_T("reg create+open failed"));
+		MessageBox(hWnd, _T("RegCreateKey failed"), _T("Tabuleèka"), MB_OK);
+	}
+	if (keyDisp == REG_CREATED_NEW_KEY)
+	{
+		OutputDebugString(_T("reg writing default values"));
+		
+		LONG regWrite = RegSetValueEx(key, _T("UseSound"), 0, REG_DWORD, &UseSoundReg, 1);
+		if (regWrite == ERROR_SUCCESS)
+			MessageBox(hWnd, _T("First run, loading default settings"), _T("Tabuleèka"), MB_OK);
+		else
+			MessageBox(hWnd, _T("Loading default settings failed"), _T("Tabuleèka"), MB_OK);
+
+		//god, I hate these conversions
+		const BYTE* BYTEDlURLKey = reinterpret_cast<const BYTE*>(downloadURL.GetBSTR());
+		int BYTEDlURLKeyLength = SysStringByteLen(downloadURL.GetBSTR());
+		const BYTE* BYTEUpURLKey = reinterpret_cast<const BYTE*>(uploadURL.GetBSTR());
+		int BYTEUpURLKeyLength = SysStringByteLen(uploadURL.GetBSTR());
+
+		RegSetValueEx(key, _T("DownloadURL"), 0, REG_SZ, BYTEDlURLKey, BYTEDlURLKeyLength);
+		RegSetValueEx(key, _T("UploadURL"), 0, REG_SZ, BYTEUpURLKey, BYTEUpURLKeyLength);
+	}
+	else if (keyDisp == REG_OPENED_EXISTING_KEY)
+	{
+		OutputDebugString(_T("reg reading values"));
+		DWORD regData;
+		LONG regRead = RegQueryValueEx(key, _T("UseSound"), 0, NULL, &UseSoundReg, &regData);
+		bUseSound = (regData == 1) ? TRUE : FALSE;
+
+
+		//god, why
+		TCHAR downloadURLTCHAR[255];
+		unsigned long downloadURLdataLength = sizeof(char) * 255;
+		RegQueryValueEx(key, _T("DownloadURL"), 0, NULL, (LPBYTE)downloadURLTCHAR, &downloadURLdataLength);
+		downloadURL = _bstr_t(downloadURLTCHAR);
+
+		TCHAR uploadURLTCHAR[255];
+		unsigned long uploadURLdataLength = sizeof(char) * 255;
+		RegQueryValueEx(key, _T("UploadURL"), 0, NULL, (LPBYTE)uploadURLTCHAR, &uploadURLdataLength);
+		uploadURL = _bstr_t(uploadURLTCHAR);
+	}
+	RegCloseKey(key);
+
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
