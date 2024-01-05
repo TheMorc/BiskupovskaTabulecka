@@ -84,9 +84,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        IDM_EXIT
     END
-    POPUP "Help"
+    POPUP "About"
     BEGIN
-        MENUITEM "About",                       IDM_HELP_ABOUT
+        MENUITEM "About",                       ID_ABOUT_ABOUT
     END
 END
 
@@ -96,7 +96,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG  0, 0, 140, 161
+IDD_ABOUTBOX DIALOG  0, 0, 220, 161
 STYLE DS_SETFONT | WS_POPUP
 EXSTYLE 0x80000000L
 FONT 8, "System"
@@ -138,7 +138,7 @@ END
 
 IDC_BISKUPOVSKATABULECKA ACCELERATORS 
 BEGIN
-    "A",            IDM_HELP_ABOUT,         VIRTKEY, CONTROL, NOINVERT
+    "A",            IDM_ABOUT,              VIRTKEY, CONTROL, NOINVERT
     "Q",            IDOK,                   VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -162,6 +162,13 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 156
         BOTTOMMARGIN, 165
+    END
+
+    IDD_SETTINGS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 135
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -210,7 +217,11 @@ END
 //
 // CEUX
 //
-HI_RES_AWARE   CEUX   {1}    
+
+HI_RES_AWARE CEUX 
+BEGIN
+    0x0001
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -221,7 +232,7 @@ HI_RES_AWARE   CEUX   {1}
 STRINGTABLE 
 BEGIN
     IDS_APP_TITLE           "Tabulecka"
-    IDS_SCAN_FAIL           "Dosralo sa to"
+    IDS_SCAN_FAIL           "Skenuvani sa dosralo"
     IDC_BISKUPOVSKATABULECKA "BiskupovskaTabulecka"
 END
 
@@ -237,14 +248,9 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_CAP_FILE            "F"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_CAP_WANOPERATIONS   "File"
+    IDS_CAP_TABULECKAOPERATIONS "Menu"
     IDS_VERSION             "1.0"
-    IDS_CAP_HELP            "Help"
+    IDS_CAP_ABOUT           "About"
 END
 
 #endif    // Slovak resources

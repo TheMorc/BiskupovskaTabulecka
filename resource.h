@@ -5,7 +5,6 @@
 #define VER_VERSION_MINOR               0
 #define IDS_APP_TITLE                   1
 #define VER_VERSION_MAJOR               1
-#define IDS_HELLO                       2
 #define IDS_SCAN_FAIL                   2
 #define IDC_BISKUPOVSKATABULECKA        3
 #define IDI_BISKUPOVSKATABULECKA        101
