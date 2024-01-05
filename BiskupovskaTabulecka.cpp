@@ -558,6 +558,7 @@ HWND CreateRpCommandBar(HWND hwnd)
 	mbi.hwndParent = hwnd;
 	mbi.nToolBarId = IDM_MENU;
 	mbi.hInstRes   = g_hInst;
+	mbi.dwFlags	   = SHCMBF_HMENU;
 	mbi.nBmpId     = 0;
 	mbi.cBmpImages = 0;
 
