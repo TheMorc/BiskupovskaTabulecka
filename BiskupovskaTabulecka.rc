@@ -75,18 +75,17 @@ END
 
 IDM_MENU MENU 
 BEGIN
-    POPUP "File"
+    MENUITEM "Edit",                        IDM_EDIT
+    POPUP "Menu"
     BEGIN
-        MENUITEM "Edit selected",               IDM_EDITSELECTED
+        MENUITEM "Add new entry",               IDM_ADDNEWENTRY
+        MENUITEM "Edit selected entry",         IDM_EDITSELECTED
         MENUITEM "Refresh",                     IDM_REFRESH
         MENUITEM SEPARATOR
         MENUITEM "Settings",                    IDM_SETTINGS
+        MENUITEM "About",                       IDM_ABOUT
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        IDM_EXIT
-    END
-    POPUP "About"
-    BEGIN
-        MENUITEM "About",                       ID_ABOUT_ABOUT
     END
 END
 
@@ -111,14 +110,14 @@ BEGIN
 END
 
 IDD_INFOPAGE DIALOG  0, 0, 220, 174
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_CHILD | WS_VISIBLE | WS_SYSMENU
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "List1",IDC_INFO,"SysListView32",LVS_REPORT | WS_TABSTOP,0,0,163,165
 END
 
 IDD_SETTINGS DIALOG  0, 0, 137, 55
-STYLE DS_SETFONT | WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE 0x80000000L
 CAPTION "Settings"
 FONT 8, "System"
@@ -248,9 +247,9 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_CAP_TABULECKAOPERATIONS "Menu"
+    IDS_CAP_EDIT           "Edit"
     IDS_VERSION             "1.0"
-    IDS_CAP_ABOUT           "About"
+    IDS_CAP_TABULECKAOPERATIONS "Menu"
 END
 
 #endif    // Slovak resources
