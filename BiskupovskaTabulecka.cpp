@@ -63,22 +63,24 @@ DWORD			dwScanTimeout			= 2000;				// default timeout value (0 means no timeout)
 BOOL			bRequestPending			= FALSE;
 BOOL			bStopScanning			= FALSE;
 
-//use sound instead of a beep
-BOOL			bUseSound				= FALSE;
-
 //table specific
-void		RequestTable();
+void		RequestTable(HWND hDlg);
 std::set<_bstr_t> deviceColumns;
 std::vector<_bstr_t> deviceData;
 int deviceDataCount, deviceCount		= 0;
 int columnCount							= 0;
 BOOL tableRefresh						= FALSE;
 BOOL firstLoad							= TRUE;
+BOOL tableRefreshFailed					= FALSE;
+
+//REGISTRY DEFAULT VALUES
+BOOL bUseSound							= FALSE;
+_bstr_t downloadURL						= _bstr_t("http://192.168.1.125/tabulecka_xml.php");
+_bstr_t uploadURL						= _bstr_t("http://192.168.1.125/tabulecka_edit.php");
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
 {
-	UM_INIT	= WM_USER + 0x100,
 	UM_SCAN	= WM_USER + 0x200,
 	UM_STARTSCANNING,
 	UM_STOPSCANNING
@@ -248,7 +250,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					deviceData.clear();
 					deviceDataCount = 0;
 					deviceCount = 0;
-					RequestTable();
+					tableRefreshFailed = FALSE;
+					RequestTable(hDlg);
 					ListView_DeleteAllItems(g_hwndList);
 					for(int col = 0; col <= columnCount; col++)
 						//this actually still leaves three columns in the lv, workaround in UpdateListView()
@@ -652,33 +655,47 @@ void RequestTable(HWND hDlg)
 
 	_variant_t vXMLSrc;
 	HRESULT hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
-	hr = CoCreateInstance (CLSID_DOMDocument, NULL,CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_IXMLDOMDocument, (LPVOID *)&iXMLDoc);
+	hr = CoCreateInstance (CLSID_DOMDocument, NULL,CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument, (LPVOID *)&iXMLDoc);
 	if(iXMLDoc){
-		iXMLDoc->put_async(VARIANT_FALSE);
-		VariantInit( &vXMLSrc );
-		vXMLSrc.vt = VT_BSTR;
-		vXMLSrc.bstrVal = SysAllocString(L"http://192.168.1.125/tabulecka_xml.php");
-		
-		hr = iXMLDoc->load(vXMLSrc, &tEmpty);
-		SysFreeString(vXMLSrc.bstrVal);
-		
-		iXMLDoc->get_documentElement(&iXMLElm);
-		iXMLElm->selectNodes(L"device//",&iXMLChildList);
-		iXMLChildList->get_length(&lLength);
-		
-		for (int x=0;x<lLength;x++){
-			iXMLChildList->get_item(x, &iXMLItem);
-			iXMLItem->get_nodeName(&bCol.GetBSTR());
-			iXMLItem->get_text(&bRow.GetBSTR());
-			if (wcscmp(_bstr_t("#text"),bCol) != 0) {
-				deviceColumns.insert(bCol.GetBSTR());
-				deviceData.push_back(bRow.GetBSTR());
-				deviceDataCount++;
-				//OutputDebugString(bRow);
+		if(tableRefreshFailed == FALSE)
+		{
+			iXMLDoc->put_async(VARIANT_FALSE);
+			VariantInit( &vXMLSrc );
+			vXMLSrc.vt = VT_BSTR;
+			vXMLSrc.bstrVal = SysAllocString(downloadURL);
+			
+			hr = iXMLDoc->load(vXMLSrc, &tEmpty);
+			if (hr == S_OK){
+				SysFreeString(vXMLSrc.bstrVal);
+				
+				iXMLDoc->get_documentElement(&iXMLElm);
+				iXMLElm->selectNodes(L"device//",&iXMLChildList);
+				iXMLChildList->get_length(&lLength);
+				
+				for (int x=0;x<lLength;x++){
+					iXMLChildList->get_item(x, &iXMLItem);
+					iXMLItem->get_nodeName(&bCol.GetBSTR());
+					iXMLItem->get_text(&bRow.GetBSTR());
+					if (wcscmp(_bstr_t("#text"),bCol) != 0) {
+						deviceColumns.insert(bCol.GetBSTR());
+						deviceData.push_back(bRow.GetBSTR());
+						deviceDataCount++;
+						//OutputDebugString(bRow);
+					}
+				}
+			}
+			else
+			{
+				tableRefreshFailed = TRUE;
+				MessageBox(g_hwnd, _T("RequestTable download failed"), _T("Tabuleèka"), MB_OK);
 			}
 		}
 	}
-
+	else
+	{
+		tableRefreshFailed = TRUE;
+		MessageBox(g_hwnd, _T("RequestTable initialization failed"), _T("Tabuleèka"), MB_OK);
+	}
 }
 
 // **************************************************************************
