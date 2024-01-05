@@ -396,8 +396,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			break;
 
-		case UM_SCAN:
+		case WM_SIZE:
+			{
+			INT nWidth = LOWORD(lParam);
+			INT nHeight = HIWORD(lParam);
+			MoveWindow(g_hwndList, 0, 0, nWidth, nHeight, TRUE);
+			}
+			break;
 
+		case UM_SCAN:
 			bRequestPending = FALSE;
 
 			lpScanBuf = (LPSCAN_BUFFER)lParam;
