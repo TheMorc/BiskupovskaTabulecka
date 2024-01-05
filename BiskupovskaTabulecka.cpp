@@ -329,18 +329,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             memset (&s_sai, 0, sizeof (s_sai));
             s_sai.cbSize = sizeof (s_sai);
 			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc, NULL);
-			g_hSubMenu = (HMENU)SendMessage(g_hwndCB, SHCMBM_GETSUBMENU, 0, IDM_FILE);
+			g_hSubMenu = (HMENU)SendMessage(g_hwndCB, SHCMBM_GETSUBMENU, 0, IDM_MENU);
 			break;
 
 		case WM_PAINT:
-			break; 
+			break;
 
 		case WM_DESTROY:
 			EndDialog(hDlg, nRet);
 			if (g_hfont != NULL)
     			DeleteObject(g_hfont);
 			CommandBar_Destroy(g_hwndCB);
-			
+
 			PostQuitMessage(0);
 			break;
 
@@ -348,9 +348,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Notify shell of our activate message
 			SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
 
-			if (firstLoad) //HACK!!!
+			if (firstLoad)
 			{
-				RequestTable();
+				RequestTable(hDlg);
 				CreateListView(hDlg);
 				SetCursor(LoadCursor(NULL, IDC_ARROW));
 				firstLoad = FALSE;
@@ -421,7 +421,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				case E_SCN_SUCCESS:
 					wsprintf(szMsgBuf, (LPTSTR)SCNBUF_GETDATA(lpScanBuffer));
 					//OutputDebugString(szMsgBuf);
-					int scan = _ttoi(szMsgBuf);
+					int scan;
+					try
+					{
+						scan = _ttoi(szMsgBuf);
+					}
+					catch (int)
+					{
+						MessageBox(g_hwnd, _T("Scan ID parser failed"), _T("Tabuleèka"), MB_OK);
+					}
 					int actualDeviceID = (deviceCount-scan);
 					ListView_EnsureVisible(g_hwndList, actualDeviceID, FALSE);
 					ListView_SetItemState(g_hwndList, ListView_GetSelectionMark(g_hwndList), 0, LVIS_SELECTED);
@@ -435,7 +443,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				dwResult = SCAN_ReadLabelMsg(hScanner,
 											 lpScanBuffer,
 											 hWnd,
-											 UM_SCAN,
+											 message,
 											 dwScanTimeout,
 											 NULL);
 				
@@ -504,8 +512,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			bStopScanning = TRUE;
 
 			return TRUE;
+
 		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+				return DefWindowProc(hWnd, message, wParam, lParam);
    }
    return 0;
 }
@@ -877,7 +886,7 @@ void ErrorExit(HWND hwnd, UINT uID, LPTSTR szFunc)
 	else
 		wsprintf(szMsg, TEXT("%s %s"), szFunc, 
 					LoadMsg(uID, szBuf, countof(szBuf)));
-	MessageBox(NULL, szMsg, NULL, MB_OK);
+	MessageBox(NULL, szMsg, _T("Tabuleèka"), MB_OK);
 	SendMessage(hwnd,UM_STOPSCANNING,0,0L);
 }
 
