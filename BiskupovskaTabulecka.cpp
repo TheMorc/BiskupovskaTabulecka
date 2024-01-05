@@ -286,7 +286,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// Parse the menu selections:
 			switch (wmId)
 			{	
-				case ID_ABOUT_ABOUT:
+				case IDM_ABOUT:
 					DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
 				    break;
 
@@ -294,8 +294,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					DialogBox(g_hInst, (LPCTSTR)IDD_SETTINGS, hWnd, (DLGPROC)Settings);
 				    break;
 
+				case IDM_ADDNEWENTRY:
+					MessageBox(hWnd, _T("WIP"), _T("Tabuleèka"), MB_OK);
+					break;
+
+				case IDM_EDITSELECTED:
+				case IDM_EDIT:
+					MessageBox(hWnd, _T("WIP"), _T("Tabuleèka"), MB_OK);
+					break;
+
+				case IDCLOSE:
+				case IDCANCEL:
+				case IDOK:
 				case IDM_EXIT:
 					SendMessage(hWnd, WM_DESTROY, 0, 0);
+					SendMessage(hWnd, WM_CLOSE, 0, 0);
 					break;
 
 				case IDM_REFRESH:
@@ -316,12 +329,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					SetCursor(LoadCursor(NULL, IDC_ARROW));
 					break;
 
-				case IDOK:
-					SendMessage (hWnd, WM_CLOSE, 0, 0);
-					break;
-
 				default:
-				   return DefWindowProc(hWnd, message, wParam, lParam);
+					return DefWindowProc(hWnd, message, wParam, lParam);
 			}
 			break;
 
