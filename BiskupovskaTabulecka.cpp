@@ -46,11 +46,13 @@ ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
 BOOL				InitInstance	(HINSTANCE, int);
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	Settings		(HWND, UINT, WPARAM, LPARAM);
 
 HWND				CreateRpCommandBar(HWND);
 void                CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont);
 void				CreateListView(HWND hDlg);
 void				ErrorExit(HWND, UINT, LPTSTR);
+void				SetScanParams();
 TCHAR* HTTPReq(wchar_t*);
 
 HANDLE			hScanner				= NULL;
@@ -228,8 +230,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// Parse the menu selections:
 			switch (wmId)
 			{	
-				case IDM_HELP_ABOUT:
+				case ID_ABOUT_ABOUT:
 					DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+				    break;
+
+				case IDM_SETTINGS:
+					DialogBox(g_hInst, (LPCTSTR)IDD_SETTINGS, hWnd, (DLGPROC)Settings);
 				    break;
 
 				case IDM_EXIT:
@@ -402,24 +408,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			//set CE sound params
-			SCAN_PARAMS scan_params;
-			memset(&scan_params,0,sizeof(scan_params));
-			SI_INIT(&scan_params);
-			dwResult = SCAN_GetScanParameters(hScanner,&scan_params);
-			SI_SET_FIELD(&scan_params,dwDecodeLedTime,250);
-			if(bUseSound)
-			{
-				SI_SET_STRING(&scan_params,szWaveFile,_T("\\Windows\\Default.wav"));
-				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,0);
-				SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,0);
-			}
-			else
-			{
-				SI_SET_FIELD(&scan_params,dwDecodeBeepTime,25);
-				SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,2000);
-			}
-			SCAN_SetScanParameters(hScanner,&scan_params);
+			SetScanParams();
 
 			lpScanBuffer = SCAN_AllocateBuffer(TRUE, dwScanSize);
 			if (lpScanBuffer == NULL)
@@ -534,8 +523,104 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+// **************************************************************************
+// Function Name: Settings
+//
+// Arguments: Please refer to the MSDN help
+//
+// Return Values:
+// 
+// Description:  call back function for settings dialog popup
+// **************************************************************************
+LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+		case WM_INITDIALOG:
+			{
+			//set checkmark to the current Use Sound state 
+			CheckDlgButton(hDlg, IDC_USESOUND, bUseSound);
 
-void RequestTable()
+			//set smaller font to edit controls so we can fit more text
+			CreateDisplayFont(18, 500, _T("MS Sans Serif"));
+        	SendMessageW(GetDlgItem(hDlg, IDC_DOWNEDIT),WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
+        	SendMessageW(GetDlgItem(hDlg, IDC_UPEDIT),WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
+
+			//not these conversions again, whyyy
+			HWND downloadEdit = GetDlgItem(hDlg, IDC_DOWNEDIT);
+			BSTR downloadEditBSTR = SysAllocString(downloadURL);
+			LPCWSTR downloadEditText = static_cast<LPCWSTR>(downloadEditBSTR);
+			SetWindowText(downloadEdit, downloadEditText);
+
+			HWND uploadEdit = GetDlgItem(hDlg, IDC_UPEDIT);
+			BSTR uploadEditBSTR = SysAllocString(uploadURL);
+			LPCWSTR uploadEditText = static_cast<LPCWSTR>(uploadEditBSTR);
+			SetWindowText(uploadEdit, uploadEditText);
+			return TRUE; 
+			}
+
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+
+				case IDOK:
+					HKEY key;
+					DWORD keyDisp;
+					BYTE UseSoundReg = 0;
+					HWND useSoundHandle = GetDlgItem(hDlg, IDC_USESOUND);
+					if(SendMessage(useSoundHandle, BM_GETCHECK, 0,0))
+					{
+						OutputDebugString(_T("usesound checked"));
+						UseSoundReg = 1;
+						bUseSound = TRUE;
+					}
+					else
+					{
+						bUseSound = FALSE;
+					}
+
+
+					//what did I do to you lol
+					//what even is this lol, LPWSTR > TCHAR > _bstr_t > BYTE
+					HWND downloadEdit = GetDlgItem(hDlg, IDC_DOWNEDIT);
+					TCHAR downloadEditTCHAR[255];
+					unsigned long downloadEditdataLength = sizeof(char) * 255;
+					GetWindowText(downloadEdit, downloadEditTCHAR, 255);
+					_bstr_t downloadEditBSTR = _bstr_t(downloadEditTCHAR);
+					const BYTE* downloadEditBYTE = reinterpret_cast<const BYTE*>(downloadEditBSTR.GetBSTR());
+					int downloadEditBYTELength = SysStringByteLen(downloadEditBSTR.GetBSTR());
+
+					HWND uploadEdit = GetDlgItem(hDlg, IDC_UPEDIT);
+					TCHAR uploadEditTCHAR[255];
+					unsigned long uploadEditdataLength = sizeof(char) * 255;
+					GetWindowText(uploadEdit, uploadEditTCHAR, 255);
+					_bstr_t uploadEditBSTR = _bstr_t(uploadEditTCHAR);
+					const BYTE* uploadEditBYTE = reinterpret_cast<const BYTE*>(uploadEditBSTR.GetBSTR());
+					int uploadEditBYTELength = SysStringByteLen(uploadEditBSTR.GetBSTR());
+
+					downloadURL = downloadEditBSTR;
+					uploadURL = uploadEditBSTR;
+
+
+					SetScanParams();
+					
+					// write entries
+					RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\BiskupovskaTabulecka"), 0, NULL, REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
+					RegSetValueEx(key, _T("UseSound"), 0, REG_DWORD, &UseSoundReg, 1);
+					RegSetValueEx(key, _T("DownloadURL"), 0, REG_DWORD, downloadEditBYTE, downloadEditBYTELength);
+					RegSetValueEx(key, _T("UploadURL"), 0, REG_DWORD, uploadEditBYTE, uploadEditBYTELength);
+					RegCloseKey(key);
+
+				EndDialog(hDlg, 1);
+				return TRUE;
+			
+			} 
+			break;
+	}
+    return FALSE;
+}
+
+void RequestTable(HWND hDlg)
 {
 	//basic httprequest no xml parse
 	//
@@ -767,4 +852,27 @@ TCHAR* HTTPReq(LPWSTR url)
 	}
 	
 	return lpBufferW;
+}
+
+void SetScanParams()
+{
+	//set CE sound params
+	SCAN_PARAMS scan_params;
+	memset(&scan_params,0,sizeof(scan_params));
+	SI_INIT(&scan_params);
+	DWORD dwResult = SCAN_GetScanParameters(hScanner,&scan_params);
+	SI_SET_FIELD(&scan_params,dwDecodeLedTime,250);
+	if(bUseSound)
+	{
+		SI_SET_STRING(&scan_params,szWaveFile,_T("\\Windows\\Default.wav"));
+		SI_SET_FIELD(&scan_params,dwDecodeBeepTime,0);
+		SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,0);
+	}
+	else
+	{
+		SI_SET_STRING(&scan_params,szWaveFile,_T(""));
+		SI_SET_FIELD(&scan_params,dwDecodeBeepTime,25);
+		SI_SET_FIELD(&scan_params,dwDecodeBeepFrequency,2000);
+	}
+	SCAN_SetScanParameters(hScanner,&scan_params);
 }

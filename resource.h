@@ -15,6 +15,7 @@
 #define IDD_INFOPAGE                    104
 #define IDD_ANSWER_BOX                  106
 #define IDR_CEUX1                       109
+#define IDD_SETTINGS                    110
 #define IDS_COMMAND1                    301
 #define IDC_INFO                        1001
 #define IDC_ANSWER                      1005
@@ -23,42 +24,32 @@
 #define IDC_VERSION                     1013
 #define IDC_DISCLAIMER                  1014
 #define IDC_APPNAME                     1015
-#define IDC_EDIT1                       1016
+#define IDC_DOWNEDIT                    1016
+#define IDC_USESOUND                    1017
+#define IDC_DOWNLABEL                   1018
+#define IDC_UPLABEL                     1019
+#define IDC_UPEDIT                      1020
+#define IDC_CAPEDIT1                    1021
 #define IDM_MAIN_COMMAND1               40001
-#define IDM_HELP_ABOUT                  40003
-#define IDM_FILE                        40004
 #define IDM_EXIT                        40005
-#define IDS_CAP_FILE                    40007
-#define IDM_RADIO_ON                    40009
-#define IDM_RADIO_OFF                   40010
-#define IDM_SMS_SEND                    40012
-#define IDM_DATA_CONNECT                40013
-#define IDM_DATA_CONNECT_CM             40013
-#define IDM_DATA_DISCON                 40014
-#define IDM_DATA_DISCON_CM              40014
-#define IDM_CALL_INIT                   40016
-#define IDM_CALL_ANSWER                 40017
-#define IDM_CALL_HANGUP                 40018
-#define IDM_ANSWER                      40019
-#define IDS_CAP_WANOPERATIONS           40021
+#define IDS_CAP_TABULECKAOPERATIONS     40021
 #define IDS_VERSION                     40022
 #define IDM_Operation                   40025
-#define IDS_CAP_HELP                    40027
-#define ID_Menu                         40028
+#define IDS_CAP_ABOUT                   40027
 #define ID_FILE_REFRESH                 40029
 #define IDM_REFRESH                     40030
-#define ID_FILE_EDITSELECTED            40031
 #define IDM_EDITSELECTED                40032
-#define ID_FILE_SETTINGS                40033
 #define IDM_SETTINGS                    40034
+#define IDM_ABOUT                       40036
+#define ID_ABOUT_ABOUT                  40037
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        110
-#define _APS_NEXT_COMMAND_VALUE         40035
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_RESOURCE_VALUE        111
+#define _APS_NEXT_COMMAND_VALUE         40038
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
