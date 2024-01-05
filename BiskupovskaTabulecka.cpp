@@ -412,7 +412,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 			INT nWidth = LOWORD(lParam);
 			INT nHeight = HIWORD(lParam);
-			MoveWindow(g_hwndList, 0, 0, nWidth, nHeight, TRUE);
+			MoveWindow(g_hwndList, -3, -5, nWidth+8, nHeight+9, TRUE);
 			}
 			break;
 
