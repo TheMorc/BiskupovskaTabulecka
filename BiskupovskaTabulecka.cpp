@@ -205,7 +205,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	BYTE UseSoundReg = bUseSound;
 	
-	LONG keyStatus = RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\BiskupovskaTabulecka"), 0, NULL, REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
+	LONG keyStatus = RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\BiskupovskaTabulecka"), 0, NULL,
+		REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
 	if (keyStatus != ERROR_SUCCESS)
 	{
 		OutputDebugString(_T("reg create+open failed"));
@@ -241,7 +242,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		//god, why
 		TCHAR downloadURLTCHAR[255];
 		unsigned long downloadURLdataLength = sizeof(char) * 255;
-		RegQueryValueEx(key, _T("DownloadURL"), 0, NULL, (LPBYTE)downloadURLTCHAR, &downloadURLdataLength);
+		RegQueryValueEx(key, _T("DownloadURL"), 0, NULL, (LPBYTE)downloadURLTCHAR,
+			&downloadURLdataLength);
 		downloadURL = _bstr_t(downloadURLTCHAR);
 
 		TCHAR uploadURLTCHAR[255];
@@ -328,7 +330,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			PostMessage(hWnd,UM_STARTSCANNING,0,0L);
             memset (&s_sai, 0, sizeof (s_sai));
             s_sai.cbSize = sizeof (s_sai);
-			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc, NULL);
+			hDlg = CreateDialogParam(g_hInst,MAKEINTRESOURCE(IDD_INFOPAGE), hWnd, (DLGPROC)WndProc,
+				NULL);
 			g_hSubMenu = (HMENU)SendMessage(g_hwndCB, SHCMBM_GETSUBMENU, 0, IDM_MENU);
 			break;
 
@@ -439,7 +442,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					int actualDeviceID = (deviceCount-scan);
 					ListView_EnsureVisible(g_hwndList, actualDeviceID, FALSE);
-					ListView_SetItemState(g_hwndList, ListView_GetSelectionMark(g_hwndList), 0, LVIS_SELECTED);
+					ListView_SetItemState(g_hwndList, ListView_GetSelectionMark(g_hwndList), 0,
+						LVIS_SELECTED);
 					ListView_SetSelectionMark(g_hwndList, actualDeviceID);
 					ListView_SetItemState(g_hwndList, actualDeviceID, LVIS_SELECTED, LVIS_SELECTED);
 					break;
@@ -723,7 +727,8 @@ void RequestTable(HWND hDlg)
 
 	_variant_t vXMLSrc;
 	HRESULT hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
-	hr = CoCreateInstance (CLSID_DOMDocument, NULL,CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument, (LPVOID *)&iXMLDoc);
+	hr = CoCreateInstance (CLSID_DOMDocument, NULL,CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument,
+		(LPVOID *)&iXMLDoc);
 	if(iXMLDoc){
 		if(tableRefreshFailed == FALSE)
 		{
