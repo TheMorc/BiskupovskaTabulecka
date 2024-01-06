@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="2"
+				Optimization="0"
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;ARMV4I;UNDER_CE=$(CEVER);_WIN32_WCE=$(CEVER);$(CePlatform);UNICODE"
 				RuntimeLibrary="1"
@@ -157,6 +157,7 @@
 				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);ARM;_ARM_;$(CePlatform);ARMV4I;UNDER_CE=$(CEVER);UNICODE;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/BiskupovskaTabulecka.pch"
@@ -181,7 +182,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:$(CESubsystem) /MACHINE:THUMB "
-				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib ScnAPI32.lib"
+				AdditionalDependencies="commctrl.lib coredll.lib aygshell.lib ScnAPI32.lib wininet.lib comsuppwd.lib"
 				OutputFile="$(PlatformName)\$(ConfigurationName)/BiskupovskaTabulecka.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
