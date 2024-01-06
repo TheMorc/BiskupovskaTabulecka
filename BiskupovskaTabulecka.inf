@@ -1,0 +1,29 @@
+[Version]
+Signature   = "$Windows NT$"        ; required as-is
+Provider    = "370network, Morc"           ; maximum of 30 characters, full app name will be "<Provider> <AppName>"
+CESignature = "$Windows CE$"        ; required as-is
+ 
+[CEStrings]
+AppName     = "Biskupovska Tabulecka"        ; maximum of 40 characters, full app name will be "<Provider> <AppName>"
+InstallDir  = %CE1%\BiskupovskaTabulecka     
+ 
+[SourceDisksNames]                  ; directory that holds the application's files
+1 = , "Common Files",,Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\Release
+ 
+[SourceDisksFiles]                  ; list of files to be included in .cab
+BiskupovskaTabulecka.exe = 1
+ 
+[DefaultInstall]                    ; operations to be completed during install
+CopyFiles   = CopyToProgramFiles
+AddReg      = RegData
+CEShortcuts = Shortcuts   
+ 
+[DestinationDirs]                   ; default destination directories for each operation section
+CopyToProgramFiles    = 0, %InstallDir%
+Shortcuts   = 0, %CE11%             ; \Windows\Start Menu\Programs
+ 
+[CopyToProgramFiles]                ; copy operation file list
+"BiskupovskaTabulecka.exe", BiskupovskaTabulecka.exe
+ 
+[Shortcuts]                         ; Shortcut created in destination dir, %CE14%
+%AppName%,0,BiskupovskaTabulecka.exe
