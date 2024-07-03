@@ -1142,6 +1142,14 @@ void CreateListView(HWND hDlg)
 			devDataColumnIndex++;
 		}
 	}
+
+	if (selectedDevice != 255){
+		printf("reselecting device");
+		ListView_EnsureVisible(g_hwndList, selectedDevice, false);
+		ListView_SetItemState(g_hwndList, selectedDevice, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED); 
+		ListView_SetSelectionMark(g_hwndList, selectedDevice);
+		SetFocus(g_hwndList);
+	}
 }
 
 // **************************************************************************
