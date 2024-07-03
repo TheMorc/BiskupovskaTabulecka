@@ -1015,24 +1015,6 @@ void MouseHack(BOOL wait)
 // **************************************************************************
 void RequestTable(HWND hDlg)
 {
-	//basic httprequest no xml parse
-	//
-	//TCHAR* xmlData = HTTPReq(_T("http://192.168.1.125/tabulecka_xml.php"));
-	//std::wstring wStr(xmlData);
-	//LPWSTR stringTest = const_cast<LPWSTR>(wStr.c_str());
-
-	//IXMLHTTPRequest hanging/other problems
-	//
-	//HRESULT hr;
-	//IXMLHTTPRequest* xmlReq;
-	//hr = CoInitializeEx(NULL,COINIT_MULTITHREADED);
-	//hr = CoCreateInstance(CLSID_XMLHTTP30, NULL, CLSCTX_INPROC, IID_IXMLHTTPRequest, (LPVOID *)&xmlReq);
-	//hr = xmlReq->open(L"GET", L"http://192.168.1.125/tabulecka_xml.php", _variant_t(FALSE), _variant_t(), _variant_t());
-	//_variant_t body;	
-	//hr = xmlReq->get_responseBody(body.GetAddress());
-	//LPWSTR stringTest = const_cast<LPWSTR>(std::wstring(body).c_str());
-	//MessageBox(hDlg, _T("hh"), _T("test"), MB_OK);
-	
 	//ce works
 	IXMLDOMDocument *iXMLDoc		= NULL;
 	IXMLDOMElement *iXMLElm			= NULL;
@@ -1220,48 +1202,15 @@ void ErrorExit(HWND hwnd, UINT uID, LPTSTR szFunc)
 	SendMessage(hwnd,UM_STOPSCANNING,0,0L);
 }
 
-TCHAR* HTTPReq(LPWSTR url)
-{
-	DWORD dwSize = 0;
-	char *lpBufferA;
-	TCHAR *lpBufferW;
-
-	HINTERNET hInternet = InternetOpen(L"HTTP Request", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-
-	if (hInternet)
-	{
-		HINTERNET hConnect = InternetOpenUrl(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
-
-		if (hConnect)
-		{
-			
-			lpBufferA = new CHAR [32000];
-			
-			if (InternetReadFile(hConnect, (LPVOID)lpBufferA, 31999, &dwSize))
-			{
-				if(dwSize != 0)
-				{
-					lpBufferA [dwSize] = '\0';                 
-
-					dwSize = MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, NULL, 0);
-				 
-					lpBufferW = new TCHAR [dwSize];
-
-					MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, lpBufferW, dwSize);
-				}
-			}
-
-			InternetCloseHandle(hConnect);
-		}
-		InternetCloseHandle(hInternet);
-	}
-	else
-	{
-	}
-	
-	return lpBufferW;
-}
-
+// **************************************************************************
+// Function Name: SetScanParams
+//
+// Arguments: 
+//
+// Return Values:
+// 
+// Description:  sets the scanner parameters accordingly to the usesound bool
+// **************************************************************************
 void SetScanParams()
 {
 	//set CE sound params
