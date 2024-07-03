@@ -75,8 +75,8 @@ BOOL tableRefreshFailed					= FALSE;
 
 //REGISTRY DEFAULT VALUES
 BOOL bUseSound							= FALSE;
-_bstr_t downloadURL						= _bstr_t("http://192.168.1.125/tabulecka_xml.php");
-_bstr_t uploadURL						= _bstr_t("http://192.168.1.125/tabulecka_edit.php");
+_bstr_t downloadURL						= _bstr_t("http://192.168.1.3/tabulecka_xml.php");
+_bstr_t uploadURL						= _bstr_t("http://192.168.1.3/tabulecka_edit.php");
 
 #define		countof(x)		sizeof(x)/sizeof(x[0])
 enum tagUSERMSGS
@@ -209,18 +209,18 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
 	if (keyStatus != ERROR_SUCCESS)
 	{
-		OutputDebugString(_T("reg create+open failed"));
-		MessageBox(hWnd, _T("RegCreateKey failed"), _T("Tabuleèka"), MB_OK);
+		OutputDebugString(_T("reg create+open failed\n"));
+		MessageBox(hWnd, _T("RegCreateKey failed"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 	}
 	if (keyDisp == REG_CREATED_NEW_KEY)
 	{
-		OutputDebugString(_T("reg writing default values"));
+		OutputDebugString(_T("reg writing default values\n"));
 		
 		LONG regWrite = RegSetValueEx(key, _T("UseSound"), 0, REG_DWORD, &UseSoundReg, 1);
 		if (regWrite == ERROR_SUCCESS)
-			MessageBox(hWnd, _T("First run, loading default settings"), _T("Tabuleèka"), MB_OK);
+			MessageBox(hWnd, _T("First run, loading default settings"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 		else
-			MessageBox(hWnd, _T("Loading default settings failed"), _T("Tabuleèka"), MB_OK);
+			MessageBox(hWnd, _T("Loading default settings failed"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 
 		//god, I hate these conversions
 		const BYTE* BYTEDlURLKey = reinterpret_cast<const BYTE*>(downloadURL.GetBSTR());
@@ -233,7 +233,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 	else if (keyDisp == REG_OPENED_EXISTING_KEY)
 	{
-		OutputDebugString(_T("reg reading values"));
+		OutputDebugString(_T("reg reading values\n"));
 		DWORD regData;
 		LONG regRead = RegQueryValueEx(key, _T("UseSound"), 0, NULL, &UseSoundReg, &regData);
 		bUseSound = (regData == 1) ? TRUE : FALSE;
@@ -692,8 +692,8 @@ LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					// write entries
 					RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\BiskupovskaTabulecka"), 0, NULL, REG_OPTION_NON_VOLATILE, 0, NULL, &key, &keyDisp);
 					RegSetValueEx(key, _T("UseSound"), 0, REG_DWORD, &UseSoundReg, 1);
-					RegSetValueEx(key, _T("DownloadURL"), 0, REG_DWORD, downloadEditBYTE, downloadEditBYTELength);
-					RegSetValueEx(key, _T("UploadURL"), 0, REG_DWORD, uploadEditBYTE, uploadEditBYTELength);
+					RegSetValueEx(key, _T("DownloadURL"), 0, REG_SZ, downloadEditBYTE, downloadEditBYTELength);
+					RegSetValueEx(key, _T("UploadURL"), 0, REG_SZ, uploadEditBYTE, uploadEditBYTELength);
 					RegCloseKey(key);
 
 				EndDialog(hDlg, 1);
