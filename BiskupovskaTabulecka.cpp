@@ -125,7 +125,6 @@ int WINAPI WinMain(	HINSTANCE hInstance,
 //    It is important to call this function so that the application 
 //    will get 'well formed' small icons associated with it.
 // **************************************************************************
-
 ATOM MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 {
 	WNDCLASS	wc;
@@ -154,7 +153,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 //    In this function, we save the instance handle in a global variable and
 //    create and display the main program window.
 // **************************************************************************
-
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	HWND	hWnd = NULL;
@@ -269,7 +267,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY	- post a quit message and return
 //
 // **************************************************************************
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent, nRet = 0;
@@ -404,7 +401,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_SETTINGCHANGE:
 			SHHandleWMSettingChange(hWnd, wParam, lParam, &s_sai);
      		break;
-
+		
 		case WM_CLOSE:
 			break;
 
@@ -548,7 +545,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // 
 // Description:  To create the menu
 // **************************************************************************
-
 HWND CreateRpCommandBar(HWND hwnd)
 {
 	SHMENUBARINFO mbi;
