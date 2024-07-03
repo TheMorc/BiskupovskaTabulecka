@@ -15,6 +15,7 @@
 #define IDD_ANSWER_BOX                  106
 #define IDR_CEUX1                       109
 #define IDD_SETTINGS                    110
+#define IDD_ADDEDIT                     111
 #define IDS_COMMAND1                    301
 #define IDC_INFO                        1001
 #define IDC_ANSWER                      1005
@@ -29,6 +30,7 @@
 #define IDC_UPLABEL                     1019
 #define IDC_UPEDIT                      1020
 #define IDC_CAPEDIT1                    1021
+#define IDC_ENTRYBOX                    1022
 #define IDM_MAIN_COMMAND1               40001
 #define IDM_EXIT                        40005
 #define IDS_CAP_TABULECKAOPERATIONS     40027

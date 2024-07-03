@@ -129,6 +129,14 @@ BEGIN
     EDITTEXT        IDC_UPEDIT,50,35,85,12,ES_AUTOHSCROLL
 END
 
+IDD_ADDEDIT DIALOG  0, 0, 137, 120
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE 0x80000000L
+CAPTION "Add/Edit"
+FONT 8, "System"
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

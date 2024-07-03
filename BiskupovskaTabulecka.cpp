@@ -35,6 +35,7 @@ HWND				g_hwndCB;					// The command bar handle
 HWND                g_hwnd;						// The main window handle
 HMENU				g_hSubMenu;					// the 'File' menu handle
 HWND				g_hwndList;					// The list view of GUI
+HWND				g_hwndEntryBox;				// The entrybox handle for add/edit dlg
 
 static SHACTIVATEINFO s_sai;
 
@@ -47,6 +48,18 @@ BOOL				InitInstance	(HINSTANCE, int);
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	Settings		(HWND, UINT, WPARAM, LPARAM);
+
+//add/edit entrybox related
+LRESULT CALLBACK	AddEntry		(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	EditEntry		(HWND, UINT, WPARAM, LPARAM);
+LRESULT				AddEditEntryBoxNotifyHandler(HWND, UINT, WPARAM, LPARAM);
+TCHAR entryBoxTemp[2000];
+TCHAR entryBoxURLGen[65535];
+TCHAR uploadURLFinal[65535];
+int selectedDevice = 255;
+void	PatchEntry(HWND hDlg, bool addingMode);
+void	MouseHack(BOOL wait);
+bool entryBoxRetry = false;
 
 HWND				CreateRpCommandBar(HWND);
 void                CreateDisplayFont(LONG lHeight, LONG lWeight, LPTSTR szFont);
@@ -292,12 +305,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				    break;
 
 				case IDM_ADDNEWENTRY:
-					MessageBox(hWnd, _T("WIP"), _T("Tabuleèka"), MB_OK);
+					DialogBox(g_hInst, (LPCTSTR)IDD_ADDEDIT, hWnd, (DLGPROC)AddEntry);
 					break;
 
 				case IDM_EDITSELECTED:
 				case IDM_EDIT:
-					MessageBox(hWnd, _T("WIP"), _T("Tabuleèka"), MB_OK);
+					DialogBox(g_hInst, (LPCTSTR)IDD_ADDEDIT, hWnd, (DLGPROC)EditEntry);
 					break;
 
 				case IDCLOSE:
@@ -701,6 +714,304 @@ LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+// **************************************************************************
+// Function Name: AddEntry
+//
+// Arguments: Please refer to the MSDN help
+//
+// Return Values:
+// 
+// Description:  call back function for addentry dialog popup
+// **************************************************************************
+LRESULT CALLBACK AddEntry(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	HWND g_hwndEntryBoxLocal;
+
+	switch (message)
+	{
+		case WM_INITDIALOG:
+		{
+			EnableWindow(g_hwndList, false);
+			EnableWindow(g_hwnd, false);
+
+			int selectedDeviceLocal = ListView_GetSelectionMark(g_hwndList);
+			SetWindowText(hDlg, _T("Adding new entry N/A"));
+		
+			g_hwndEntryBoxLocal = CreateWindow(WC_LISTVIEW, NULL, WS_VISIBLE | LVS_REPORT | LVS_EDITLABELS, 0, 0, 480, 420, hDlg, (HMENU) 500, g_hInst, NULL);
+			ListView_SetExtendedListViewStyle(g_hwndEntryBoxLocal, ListView_GetExtendedListViewStyle(g_hwndEntryBoxLocal) | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+			LVCOLUMN	lvColumn;
+			lvColumn.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_WIDTH | LVCF_TEXT;
+			lvColumn.fmt = LVCFMT_LEFT;
+			lvColumn.pszText = _T("Device entry");
+			lvColumn.iSubItem = 0;
+			lvColumn.cx = 2000;
+			ListView_InsertColumn(g_hwndEntryBoxLocal, 0, &lvColumn);
+
+			g_hwndEntryBox = g_hwndEntryBoxLocal; //HACK! HACK!
+			selectedDevice = selectedDeviceLocal; //HACH!!!!! WHAT?????!??!
+
+			//this part of the code is really interesting due to quirks on the MSVC/WIN32/WM/CE kernel side
+			//it's chaotic evil, HACK!!! HACK!!!
+			LVITEM lvI;
+			lvI.mask = LVIF_TEXT | LVIF_STATE;
+			lvI.iItem = 0;
+			lvI.cchTextMax = 31999;
+			lvI.state = 0;
+			lvI.stateMask = 0;
+			for	(int i = 0; i < columnCount; i++)
+			{
+				//printf("columnIndex %d, data: %s\n", i, deviceData[selectedDevice *columnCount + i].GetBSTR());
+				ListView_InsertItem(g_hwndEntryBoxLocal, &lvI);
+			}
+			std::set<_bstr_t>::iterator it;
+			int counter = 0;
+			for (it = deviceColumns.begin(); it != deviceColumns.end(); ++it, ++counter){
+				_bstr_t column = *it;
+				OutputDebugString(column.GetBSTR()); //HACK!!!!!
+				_bstr_t colText = column.GetBSTR()+2; //HACK!!!!
+				ListView_SetItemText(g_hwndEntryBoxLocal,counter, 0, colText);
+			}
+
+			return TRUE; 
+		}
+
+		case WM_NOTIFY: //listview change handling, uses the HACK above!
+		{
+			LV_DISPINFO *pLvdi = (LV_DISPINFO *)lParam;
+			switch(pLvdi->hdr.code)
+			{
+				case LVN_ENDLABELEDIT:
+					if ((pLvdi->item.iItem != -1) && (pLvdi->item.pszText != NULL))
+						ListView_SetItemText(g_hwndEntryBox,ListView_GetSelectionMark(g_hwndEntryBox), 0, pLvdi->item.pszText);
+					return true;
+			}
+		}
+
+		case WM_COMMAND:
+			switch (wParam)
+			{
+				case IDOK:	
+					printf("preparing to save changes!");
+					MouseHack(true);
+					entryBoxRetry = false;
+					wsprintf(entryBoxURLGen, _T("?add"), selectedDevice);
+					for	(int i = 0; i < columnCount; i++)
+					{
+						//printf("columnIndex %d, data: %s\n", i, entryBoxTemp);
+						ListView_GetItemText(g_hwndEntryBox, i, 0, entryBoxTemp, sizeof(entryBoxTemp));
+						wsprintf(entryBoxURLGen, _T("%s&%d=%s"), entryBoxURLGen, i, entryBoxTemp);
+					}
+					PatchEntry(hDlg, true);
+					//OutputDebugString(entryBoxURLGen);
+					EnableWindow(g_hwndList, true);
+					EnableWindow(g_hwnd, true);
+					SendMessage(g_hwnd, WM_COMMAND, IDM_REFRESH, NULL);
+					MouseHack(false);
+					EndDialog(hDlg, 1);
+					break;
+
+				default: //setting title afterwards in a WM_COMMAND as a HACK!!!! Again due to some win32 quirk
+					TCHAR entryTitle[25];
+					wsprintf(entryTitle, _T("Adding new entry %d"), deviceCount+1);
+					SetWindowText(hDlg, entryTitle);
+					break;
+			} 
+			break;
+	}
+    return FALSE;
+}
+
+// **************************************************************************
+// Function Name: EditEntry
+//
+// Arguments: Please refer to the MSDN help
+//
+// Return Values:
+// 
+// Description:  call back function for editentry dialog popup
+// **************************************************************************
+LRESULT CALLBACK EditEntry(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{	
+	HWND g_hwndEntryBoxLocal;
+
+	switch (message)
+	{
+		case WM_INITDIALOG:
+		{
+			EnableWindow(g_hwndList, false);
+			EnableWindow(g_hwnd, false);
+
+			int selectedDeviceLocal = ListView_GetSelectionMark(g_hwndList);
+			SetWindowText(hDlg, _T("Editing entry N/A"));
+		
+			g_hwndEntryBoxLocal = CreateWindow(WC_LISTVIEW, NULL, WS_VISIBLE | LVS_REPORT | LVS_EDITLABELS, 0, 0, 480, 420, hDlg, (HMENU) 500, g_hInst, NULL);
+			ListView_SetExtendedListViewStyle(g_hwndEntryBoxLocal, ListView_GetExtendedListViewStyle(g_hwndEntryBoxLocal) | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+			LVCOLUMN	lvColumn;
+			lvColumn.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_WIDTH | LVCF_TEXT;
+			lvColumn.fmt = LVCFMT_LEFT;
+			lvColumn.pszText = _T("Device entry");
+			lvColumn.iSubItem = 0;
+			lvColumn.cx = 2000;
+			ListView_InsertColumn(g_hwndEntryBoxLocal, 0, &lvColumn);
+
+			g_hwndEntryBox = g_hwndEntryBoxLocal; //HACK! HACK!
+			selectedDevice = selectedDeviceLocal; //HACH!!!!! WHAT?????!??!
+
+			//this part of the code is really interesting due to quirks on the MSVC/WIN32/WM/CE kernel side
+			//it's chaotic evil, HACK!!! HACK!!!
+			LVITEM lvI;
+			lvI.mask = LVIF_TEXT | LVIF_STATE;
+			lvI.iItem = 0;
+			lvI.cchTextMax = 31999;
+			lvI.state = 0;
+			lvI.stateMask = 0;
+			for	(int i = 0; i < columnCount; i++)
+			{
+				//printf("columnIndex %d, data: %s\n", i, deviceData[selectedDevice *columnCount + i].GetBSTR());
+				ListView_InsertItem(g_hwndEntryBoxLocal, &lvI);
+			}
+			for	(int i = 0; i < columnCount; i++) //HACK!!!!! HACK!!!
+			{
+				ListView_SetItemText(g_hwndEntryBoxLocal,i, 0, deviceData[selectedDeviceLocal *columnCount + i].GetBSTR());
+			}
+
+			return TRUE; 
+		}
+
+		case WM_NOTIFY: //listview change handling, uses the HACK above!
+		{
+			LV_DISPINFO *pLvdi = (LV_DISPINFO *)lParam;
+			switch(pLvdi->hdr.code)
+			{
+				case LVN_ENDLABELEDIT:
+					if ((pLvdi->item.iItem != -1) && (pLvdi->item.pszText != NULL))
+						ListView_SetItemText(g_hwndEntryBox,ListView_GetSelectionMark(g_hwndEntryBox), 0, pLvdi->item.pszText);
+					return true;
+			}
+		}
+
+		case WM_COMMAND:
+			switch (wParam)
+			{
+				case IDOK:	
+					printf("preparing to save changes!");
+					MouseHack(true);
+					entryBoxRetry = false;
+					wsprintf(entryBoxURLGen, _T("?id=%d"), selectedDevice);
+					for	(int i = 0; i < columnCount; i++)
+					{
+						//printf("columnIndex %d, data: %s\n", i, entryBoxTemp);
+						ListView_GetItemText(g_hwndEntryBox, i, 0, entryBoxTemp, sizeof(entryBoxTemp));
+						wsprintf(entryBoxURLGen, _T("%s&%d=%s"), entryBoxURLGen, i, entryBoxTemp);
+					}
+					PatchEntry(hDlg, false);
+					//OutputDebugString(entryBoxURLGen);
+					EnableWindow(g_hwndList, true);
+					EnableWindow(g_hwnd, true);
+					SendMessage(g_hwnd, WM_COMMAND, IDM_REFRESH, NULL);
+					MouseHack(false);
+					EndDialog(hDlg, 1);
+					break;
+
+				default: //setting title afterwards in a WM_COMMAND as a HACK!!!! Again due to some win32 quirk
+					TCHAR entryTitle[25];
+					wsprintf(entryTitle, _T("Editing entry %d"), selectedDevice);
+					SetWindowText(hDlg, entryTitle);
+					break;
+			} 
+			break;
+	}
+    return FALSE;
+}
+
+
+// **************************************************************************
+// Function Name: PatchEntry
+//
+// Arguments: handle, adding mode
+//
+// Return Values:
+// 
+// Description:  patches the entry in tabuleèka
+// **************************************************************************
+void PatchEntry(HWND hDlg, bool addingMode)
+{
+	if(!entryBoxRetry)
+		wsprintf(uploadURLFinal, _T("%s%s"), uploadURL.GetBSTR(), entryBoxURLGen);
+	//OutputDebugString(uploadURLFinal);
+
+	DWORD dwSize = 0;
+	char *lpBufferA;
+	TCHAR *lpBufferW;
+
+	HINTERNET hInternet = InternetOpen(L"HTTP Request", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+
+	if (hInternet)
+	{
+		HINTERNET hConnect = InternetOpenUrl(hInternet, uploadURLFinal, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+
+		if (hConnect)
+		{
+			
+			lpBufferA = new CHAR [32000];
+			
+			if (InternetReadFile(hConnect, (LPVOID)lpBufferA, 31999, &dwSize))
+			{
+				if(dwSize != 0)
+				{
+					lpBufferA [dwSize] = '\0';
+					dwSize = MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, NULL, 0);
+					lpBufferW = new TCHAR [dwSize];
+					MultiByteToWideChar (CP_ACP, 0, lpBufferA, -1, lpBufferW, dwSize);
+				}
+			}
+
+			InternetCloseHandle(hConnect);
+		}
+		InternetCloseHandle(hInternet);
+	}
+
+	lpBufferW[3] = '\0';
+	if (_tcscmp(lpBufferW, _T("200")) != 0){
+		TCHAR szMsg[256];
+		if(addingMode)
+			wsprintf(szMsg, TEXT("Adding this entry failed!\nCode: %s"), lpBufferW);
+		else
+			wsprintf(szMsg, TEXT("Editing this entry failed!\nCode: %s"), lpBufferW);
+		if (MessageBox(hDlg, szMsg, _T("Tabuleèka"), MB_RETRYCANCEL | MB_ICONERROR) == IDRETRY){
+			entryBoxRetry = true;
+			PatchEntry(hDlg, addingMode);
+		}
+	}
+}
+
+// **************************************************************************
+// Function Name: MouseHack
+//
+// Arguments: bool
+//
+// Return Values:
+// 
+// Description:  HACK!!!!!! another win32/compiler quirk
+// **************************************************************************
+void MouseHack(BOOL wait)
+{
+	//HACK!)!!!!
+	if (wait)
+		SetCursor(LoadCursor(NULL, IDC_WAIT));
+	else
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+}
+
+// **************************************************************************
+// Function Name: RequestTable
+//
+// Arguments: dialog handle
+//
+// Return Values:
+// 
+// Description:  loads the xml table from url and parses it for later usage
+// **************************************************************************
 void RequestTable(HWND hDlg)
 {
 	//basic httprequest no xml parse
