@@ -651,7 +651,7 @@ LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					HWND useSoundHandle = GetDlgItem(hDlg, IDC_USESOUND);
 					if(SendMessage(useSoundHandle, BM_GETCHECK, 0,0))
 					{
-						OutputDebugString(_T("usesound checked"));
+						OutputDebugString(_T("usesound checked\n"));
 						UseSoundReg = 1;
 						bUseSound = TRUE;
 					}
