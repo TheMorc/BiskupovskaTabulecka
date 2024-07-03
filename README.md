@@ -4,14 +4,9 @@
 Apka s jennoduchým účelom:
  * zobraziť obsah "Biskupovskej tabulečky"
  * vedeť skenuvať ze vstavaného imagera na profesionálnom počítači Motorola MC75 s 1D barcode imagerom
- * ~~dovoliť ľahkú manipuláciu s obsahom~~
+ * dovoliť ľahkú manipuláciu s obsahom
+ * dovoliť pridať nový obsah 
  * mosí to byť samozrejme natívne
-
-## TODO
-Mosím tam dorobiť ešte pár vecí:
-- [ ] Opraviť pár bugov
-- [ ] Domontuvať manipuláciu textu kerá tam neni
-- [ ] Určite ešte volačo len nevím čo
  
 ## Credits
 * já za to že sa mi to stelo
