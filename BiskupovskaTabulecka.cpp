@@ -666,7 +666,7 @@ LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					HWND downloadEdit = GetDlgItem(hDlg, IDC_DOWNEDIT);
 					TCHAR downloadEditTCHAR[255];
 					unsigned long downloadEditdataLength = sizeof(char) * 255;
-					GetWindowText(downloadEdit, downloadEditTCHAR, 255);
+					GetWindowText(downloadEdit, downloadEditTCHAR, downloadEditdataLength);
 					_bstr_t downloadEditBSTR = _bstr_t(downloadEditTCHAR);
 					const BYTE* downloadEditBYTE = reinterpret_cast<const BYTE*>(downloadEditBSTR.GetBSTR());
 					int downloadEditBYTELength = SysStringByteLen(downloadEditBSTR.GetBSTR());
@@ -674,7 +674,7 @@ LRESULT CALLBACK Settings(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					HWND uploadEdit = GetDlgItem(hDlg, IDC_UPEDIT);
 					TCHAR uploadEditTCHAR[255];
 					unsigned long uploadEditdataLength = sizeof(char) * 255;
-					GetWindowText(uploadEdit, uploadEditTCHAR, 255);
+					GetWindowText(uploadEdit, uploadEditTCHAR, uploadEditdataLength);
 					_bstr_t uploadEditBSTR = _bstr_t(uploadEditTCHAR);
 					const BYTE* uploadEditBYTE = reinterpret_cast<const BYTE*>(uploadEditBSTR.GetBSTR());
 					int uploadEditBYTELength = SysStringByteLen(uploadEditBSTR.GetBSTR());
