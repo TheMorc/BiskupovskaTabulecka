@@ -323,6 +323,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				case IDM_REFRESH:
 					SetCursor(LoadCursor(NULL, IDC_WAIT));
+					selectedDevice = ListView_GetSelectionMark(g_hwndList);
 					deviceColumns.clear();
 					deviceData.clear();
 					deviceDataCount = 0;
