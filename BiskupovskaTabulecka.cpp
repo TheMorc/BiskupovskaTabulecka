@@ -1088,13 +1088,14 @@ void CreateListView(HWND hDlg)
 
 	g_hwndList = GetDlgItem(hDlg, IDC_INFO);
 
+
 	// Put the list view in full row select mode
-	ListView_SetExtendedListViewStyle(g_hwndList, ListView_GetExtendedListViewStyle(g_hwndList) | LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyle(g_hwndList, ListView_GetExtendedListViewStyle(g_hwndList) | LVS_EX_FULLROWSELECT | LVS_EX_GRADIENT);
 	
 	CreateDisplayFont(21, 700, _T("MS Sans Serif"));
 	SendMessage(g_hwndList,WM_SETFONT, (WPARAM)g_hfont, (LPARAM) TRUE);
 
-	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
+	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT;
     lvColumn.fmt = LVCFMT_LEFT;
     GetWindowRect(g_hwndList,&rect);
    	nWidth = (rect.right - rect.left)/2;
