@@ -444,7 +444,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					catch (int)
 					{
-						MessageBox(g_hwnd, _T("Scan ID parser failed"), _T("Tabuleèka"), MB_OK);
+						MessageBox(g_hwnd, _T("Scan ID parser failed"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 					}
 					int actualDeviceID = (deviceCount-scan);
 					ListView_EnsureVisible(g_hwndList, actualDeviceID, FALSE);
@@ -766,14 +766,14 @@ void RequestTable(HWND hDlg)
 			else
 			{
 				tableRefreshFailed = TRUE;
-				MessageBox(g_hwnd, _T("RequestTable download failed"), _T("Tabuleèka"), MB_OK);
+				MessageBox(g_hwnd, _T("RequestTable download failed\nCheck URL in settings or check your connection"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 			}
 		}
 	}
 	else
 	{
 		tableRefreshFailed = TRUE;
-		MessageBox(g_hwnd, _T("RequestTable initialization failed"), _T("Tabuleèka"), MB_OK);
+		MessageBox(g_hwnd, _T("RequestTable initialization failed"), _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -904,7 +904,7 @@ void ErrorExit(HWND hwnd, UINT uID, LPTSTR szFunc)
 	else
 		wsprintf(szMsg, TEXT("%s %s"), szFunc, 
 					LoadMsg(uID, szBuf, countof(szBuf)));
-	MessageBox(NULL, szMsg, _T("Tabuleèka"), MB_OK);
+	MessageBox(NULL, szMsg, _T("Tabuleèka"), MB_OK | MB_ICONERROR);
 	SendMessage(hwnd,UM_STOPSCANNING,0,0L);
 }
 
