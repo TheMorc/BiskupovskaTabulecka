@@ -152,8 +152,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="2"
+				Optimization="0"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);ARM;_ARM_;$(CePlatform);ARMV4I;UNDER_CE=$(CEVER);UNICODE;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
